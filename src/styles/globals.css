@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  overflow: hidden;
+}
+
+/* prevent bounce when scrolling too hard */
+body {
+  overscroll-behavior: none;
+}
+
+@layer utilities {
+  .safari-text-center {
+    text-align-last: center;
+  }
+}
