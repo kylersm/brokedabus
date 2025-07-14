@@ -1,4 +1,4 @@
-import "~/styles/IosevkaBus.css";
+import "~/styles/IosevkaBus.module.css";
 import PadPage from "~/components/templates/PadPage";
 import { type CSSProperties, type PropsWithChildren, useEffect, useState } from "react";
 import { GeistSans } from "geist/font/sans";
