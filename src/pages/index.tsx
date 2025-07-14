@@ -34,9 +34,25 @@ export default function Home() {
             <li>Keep track of your favorite bus stops</li>
           </ul><br/>
 
+          If you want...<br/>
+          <ul className="list-disc ml-5">
+            <li>
+              To know how to go from A to B
+              <p className="ml-2">See <a className="text-blue-500 underline" href="https://transitapp.com/">Transit App</a> or your Maps app</p>
+            </li>
+            <li>
+              To see service disruptions & detours
+              <p className="ml-2">Visit <a className="text-blue-500 underline" href="https://thebus.org/">TheBus</a> website</p>
+            </li>
+            <li>
+              To suggest new features for BrokeDaBus
+              <p className="ml-2">Request at <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus/issues">BrokeDaBus</a> code repository</p>
+            </li>
+          </ul><br/>
+
           <b>Developer & Source Code</b><br/>
           <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
-          <i>Not affiliated with Oahu Transit Services or Department of Transit Services.</i><br/><br/>
+          <i>Not affiliated with Oahu Transit Services</i><br/><br/>
 
           <b>Inspired By</b><br/>
           <a className="text-blue-500 underline" href="https://pantographapp.com">Pantograph App</a><br/>
