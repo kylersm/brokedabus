@@ -1,0 +1,108 @@
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 400;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-Regular.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 400;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-Extended.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-Extended.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 700;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-Bold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-Bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 700;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtendedBold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtendedBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 500;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-Medium.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-Medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 500;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtendedMedium.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtendedMedium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 600;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-SemiBold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 600;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtendedSemiBold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtendedSemiBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 800;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtraBold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtraBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 800;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtendedExtraBold.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtendedExtraBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 900;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-Heavy.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-Heavy.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Iosevka Bus Web';
+	font-display: swap;
+	font-weight: 900;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/headsigns/WOFF2/IosevkaBus-ExtendedHeavy.woff2') format('woff2'), url('/headsigns/TTF/IosevkaBus-ExtendedHeavy.ttf') format('truetype');
+}
