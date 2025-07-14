@@ -76,7 +76,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       {busInfoToString(vehicleModelInfo)}<br/>
       <ul className='text-left list-disc pl-5 w-fit'>
         <li>Has {vehicleModelInfo.windowType} {vehicleModelInfo.windowColor} Windows</li>
-        <li>Headsign color{`:`} {vehicleModelInfo.headsignColor}</li>
+        <li>Using a {vehicleModelInfo.headsignColor} headsign</li>
         {vehicleModelInfo.leftHeadsign && <li>Has left headsign</li>}
       </ul>
     </div>}
