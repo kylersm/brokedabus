@@ -15,7 +15,7 @@ export default function NotFound(props: {
 
   return <div className='w-full h-full flex'>
     <div className='m-auto text-center'>
-      <Image className="mx-auto" width={200} height={200} src={"/brokedabus/bus404.png"} alt="A cartoonish bus drawn with a confused expression on it's face with its front wheels holding a paper"/>
+      <Image className="mx-auto" width={200} height={200} src={"/bus404.png"} alt="A cartoonish bus drawn with a confused expression on it's face with its front wheels holding a paper"/>
       <p className='text-4xl font-bold m-2'>{props.errorMessage}</p>
       {props.children}<br/>
       <p onClick={() => router.back()} className='mt-4 mx-auto w-fit cursor-pointer text-blue-500 underline'>{"<< Go Back"}</p>

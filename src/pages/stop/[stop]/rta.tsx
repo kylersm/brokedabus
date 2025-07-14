@@ -124,7 +124,7 @@ const RTAEntry = (props: { arrival: PolishedArrivalContainer, stop: PolishedStop
   return <ListItem
     emoji={<Image 
       className='min-w-14 max-w-14'
-      src={arrival.status === "Canceled" ? "/brokedabus/canceled.png" : vehicle === undefined ? "/brokedabus/scheduled.png" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "/brokedabus/arriving.png" : "/brokedabus/arrival.png"}
+      src={arrival.status === "Canceled" ? "/canceled.png" : vehicle === undefined ? "/scheduled.png" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "/arriving.png" : "/arrival.png"}
       width={100} height={100}
       title={vehicle === undefined ? "Bus lacks GPS" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "Bus is approaching" : "Bus is coming"}
       alt={vehicle === undefined ? "Bus lacks GPS" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "Bus is approaching" : "Bus is coming"}

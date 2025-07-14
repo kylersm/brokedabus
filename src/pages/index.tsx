@@ -14,7 +14,7 @@ export default function Home() {
     </div>
     <PadPage center>
       <div className="text-5xl font-bold">BrokeDaBus</div>
-      <Image className="mx-auto" src="/brokedabus/bus.png" width={250} height={250} alt="A picture of a bus with the headsign of the app name, and the author"/>
+      <Image className="mx-auto" src="/bus.png" width={250} height={250} alt="A picture of a bus with the headsign of the app name, and the author"/>
       <div className="text-xl font-semibold">Welcome to my app!</div>
       <div className="flex w-full text-left">
         <span className="mx-auto">
@@ -35,7 +35,8 @@ export default function Home() {
           </ul><br/>
 
           <b>Developer & Source Code</b><br/>
-          <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/><br/>
+          <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
+          <i>Not affiliated with Oahu Transit Services or Department of Transit Services.</i><br/><br/>
 
           <b>Inspired By</b><br/>
           <a className="text-blue-500 underline" href="https://pantographapp.com">Pantograph App</a><br/>

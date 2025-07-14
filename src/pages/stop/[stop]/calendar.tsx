@@ -69,7 +69,7 @@ const Calendar: NextPage<{stop:string}> = ({ stop }) => {
           const date = new Date(parseInt(k));
           return <ListItem key={"D"+k}
             topEmoji
-            emoji={<Image src={`/brokedabus/dotw/${dotw[date.getUTCDay()]}.png`} className="min-w-10 max-w-14" alt={dotw[date.getUTCDay()] ?? ''} width={150} height={150}/>}
+            emoji={<Image src={`/dotw/${dotw[date.getUTCDay()]}.png`} className="min-w-10 max-w-14" alt={dotw[date.getUTCDay()] ?? ''} width={150} height={150}/>}
             href={{
               pathname: "/stop/[stop]/calendar/[date]",
               query: { stop, date: getHNLSafeDateString(date) }

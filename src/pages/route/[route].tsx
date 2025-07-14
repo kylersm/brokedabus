@@ -14,8 +14,9 @@ import NotFound from "~/components/NotFound";
 import HeadTitle from "~/components/HeadTitle";
 import Spinner from "~/components/Spinner";
 import HalfTable from "~/components/HalfTable";
+import { sortString } from "~/lib/util";
 
-const GetListOfShapes = (routes: PolishedHEARoute[]) => routes.map(r => <ListItem 
+const GetListOfShapes = (routes: PolishedHEARoute[]) => routes.sort((a, b) => sortString(a.shapeID, b.shapeID)).map(r => <ListItem 
   key={r.shapeID}
   href={{
     pathname: "/shape/[shape]",
@@ -23,8 +24,8 @@ const GetListOfShapes = (routes: PolishedHEARoute[]) => routes.map(r => <ListIte
   }}
   topArrow
 >
-  <b>{r.headsign}</b> <i>(From stop {r.firstStopCode})</i><br/>
-  <i className="pl-3">Starts from {r.firstStopName}</i>
+  <b>{r.headsign}</b> (Shape ID: <pre className="inline">{r.shapeID})</pre><br/>
+  <i className="pl-3">Starts from stop {r.firstStopCode} - {r.firstStopName}</i>
 </ListItem>);
 
 const RoutePage: NextPage<{route: string;}> = ({ route }) => {

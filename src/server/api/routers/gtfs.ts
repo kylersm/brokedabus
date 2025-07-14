@@ -190,7 +190,7 @@ export const YYYYMMDDToTime = (time: string, byMidnight?: boolean): number => {
 // internal
 const getRouteHeadsigns = (feed: GTFSFeed, routeId: string): Types.PolishedHEARoute[] | undefined => {
   const trips = feed.trips.filter(t => t.route_id === routeId)
-    .filter((t, i, a) => a.findIndex(t2 => /* t.trip_headsign === t2.trip_headsign && */ t.shape_id === t2.shape_id) === i);
+    .filter((t, i, a) => a.findIndex(t2 => t.trip_headsign === t2.trip_headsign && t.shape_id === t2.shape_id) === i);
 
   const firstStops = feed.stop_times.filter(st => trips.map(t => t.trip_id).includes(st.trip_id) && st.stop_sequence === "1");
   const routes: Types.PolishedHEARoute[] = [];
