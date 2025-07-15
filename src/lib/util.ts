@@ -231,19 +231,10 @@ export const quantifyMiles = (miles: number): string => {
   } else if(feet > 1000) {
     return `${yards.toFixed(2)} yard${plural(yards)}`
   } else {
-    return `${feet.toFixed(2)} ${plural(feet, "foot", "feet")}`;
+    return `${feet.toFixed(2)} ${plural(feet, "feet", "foot")}`;
   }
 }
 
 export const sortByContext = <T>(previous: number, current: string, i: number, array: T[]) => {
   return previous + (i % 2 === 1 ? 0 : +(i % 4 === 0 ? /[A-Za-z0-9]$/ : /^[A-Za-z0-9]/).test(current))/array.length;
 }
-
-/*export const getDate = (date: Date, hhmmss: string): Date => {
-  let split = hhmmss.split(":");
-  if(split.length < 3) split = ['0', '0', '0'];
-  const hours = parseInt(split[0]!);
-  const minutes = parseInt(split[1]!);
-  const seconds = parseInt(split[2]!);
-  return new Date(date.getFullYear(), date.getMonth() - 1, date.getDate(), hours, minutes, seconds, 0);
-}*/

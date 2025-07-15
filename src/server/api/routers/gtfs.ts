@@ -305,6 +305,11 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
   const tripVehicle: Types.TripVehicle | undefined = vehicle;
   if(tripVehicle && vehicle?.block && vehicle.trip)
     tripVehicle.tripInfo = getExpectedTripFromBC(vehicle.block, vehicle.trip, tripVehicle.adherence)
+  const date = arrival.date.split('/').map(x => parseInt(x));
+  const isNoon = arrival.stopTime.endsWith("PM");
+  const time = arrival.stopTime.slice(0, -3).split(":").map(x => parseInt(x));
+  if(isNoon) time[0]! += 12;
+  const stopTime = new Date(`${date[2]!}-${('0' + date[0]).slice(-2)}-${('0' + date[1]).slice(-2)}T${('0' + time[0]).slice(-2)}:${('0' + time[1]).slice(-2)}:00.000-10:00`);
   return {
     vehicle: tripVehicle,
     arrival: {
@@ -322,7 +327,7 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
       estimated: switchEstimated(parseInt(arrival.estimated)),
       status: switchCanceled(parseInt(arrival.canceled)),
       id: arrival.id,
-      stopTime: new Date(`${arrival.date} ${arrival.stopTime}`)
+      stopTime
     }
   };
 };
