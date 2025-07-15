@@ -308,7 +308,7 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
   const date = arrival.date.split('/').map(x => parseInt(x));
   const isNoon = arrival.stopTime.endsWith("PM");
   const time = arrival.stopTime.slice(0, -3).split(":").map(x => parseInt(x));
-  if(isNoon) time[0]! += 12;
+  if(isNoon && time[0] !== 12) time[0]! += 12;
   const stopTime = new Date(`${date[2]!}-${('0' + date[0]).slice(-2)}-${('0' + date[1]).slice(-2)}T${('0' + time[0]).slice(-2)}:${('0' + time[1]).slice(-2)}:00.000-10:00`);
   return {
     vehicle: tripVehicle,
