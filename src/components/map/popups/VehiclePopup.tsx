@@ -75,9 +75,8 @@ export default function VehiclePopup(props: {
       <div className="text-center mb-2">{routeChip} {headsign}</div>
     </>}
     {arrival &&  <>
-      {(arrival.trip.trips !== vehicle?.tripInfo?.trips) && <i>Future Trip: <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</i>}
-      <div>{`${arrival.departing ? "Departing" : "Arriving"} ${arrivalString(arrival.stopTime)}`}<br/></div>
-      <>{quantifyMiles(arrival.distance / 1603.344)} away from stop<br/></>
+      {!vehicle?.tripInfo?.trips.some(t => arrival.trip.trips.includes(t)) && <i>Future Trip: <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</i>}
+      <div>{`${arrival.departing ? "Departing" : "Arriving"} ${arrivalString(arrival.stopTime)}`}, {quantifyMiles(arrival.distance / 1603.344)} away from stop<br/></div>
     </>}
     {schedule}<br/>
     {blocks && <>{
