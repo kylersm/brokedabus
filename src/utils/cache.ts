@@ -43,8 +43,32 @@ const toPolishedVehicle = (v: Vehicle): Types.HEAVehicle => ({
   lat: parseFloat(v.latitude),
   lon: parseFloat(v.longitude),
   adherence: parseInt(v.adherence),
-  last_message: new Date(v.last_message)
+  last_message: getHSTDateFromVehicleMSG(v.last_message)
 });
+
+const getHSTDateFromVehicleMSG = (lastMsg: string) => {
+  try {
+    const string = lastMsg.split(' ');
+    const date = string[0]!.split("/");
+    const time = string[1]!.split(":");
+    const isNoon = string[2] === "PM";
+
+    const year = date[2]!;
+    const month = date[0]!.padStart(2, '0');;
+    const day = date[1]!.padStart(2, '0');;
+
+    let hourVal = parseInt(time[0]!);
+    if(isNoon && hourVal < 12) hourVal += 12;
+    const hour = hourVal.toString().padStart(2, '0');
+    const min = time[1]!.padStart(2, '0');;
+    const sec = time[2]!.padStart(2, '0');;
+
+    return new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}.000-10:00`);
+
+  } catch {
+    return new Date(0);
+  }
+}
 
 /**
  * A "turnstile" way of a relatively intense task.
@@ -135,6 +159,7 @@ export async function getGTFS() {
     // check if we need to recheck it
     if(head <= GTFS_LAST_MOD) {
       fetchingGTFS = false;
+      lastFetchedGTFS = now;
       return GTFS_FEED;
     }
     GTFS_LAST_MOD = head;
