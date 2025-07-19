@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "~/utils/api";
 import { useMap, StopArrival } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
@@ -56,9 +56,9 @@ export function AllBusses() {
 
   const [showFilter, setSF] = useState<boolean>(false);
 
-  const [now, setNow] = useState<number>(getHSTTime());
+  const now = useRef<number>(getHSTTime());
   useEffect(() => {
-    const interval = setInterval(() => setNow(getHSTTime()), 1000);
+    const interval = setInterval(() => now.current = getHSTTime(), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -99,7 +99,7 @@ export function AllBusses() {
             return <StopArrival
               key={s.stop._id + t._id}
               vehicle={vehicle?.number}
-              arrives={t.arrives - now - 60 * (vehicle?.adherence ?? 0)}/>;
+              arrives={t.arrives - now.current - 60 * (vehicle?.adherence ?? 0)}/>;
           })}
         </StopPopup>
       }))}

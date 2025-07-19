@@ -40,7 +40,6 @@ export function TapToFindStops() {
     const newLoc = await new Promise<GeolocationPosition>((resolve) => {
       navigator.geolocation.getCurrentPosition(pos => resolve(pos))
     });
-    console.log("f")
     setLocation(newLoc);
     setPoint([newLoc.coords.latitude, newLoc.coords.longitude]);
   }

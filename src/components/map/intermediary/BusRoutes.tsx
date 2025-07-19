@@ -1,5 +1,5 @@
 import type { LatLngBoundsExpression, LatLngTuple, Map } from "leaflet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { PolishedRoute } from "~/lib/GTFSTypes";
 import { api } from "~/utils/api";
 import RouteChip from "../../Route";
@@ -73,9 +73,9 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
     }
   }, [map, allShapes, zoomed]);
 
-  const [now, setNow] = useState<number>(getHSTTime());
+  const now = useRef<number>(getHSTTime());
   useEffect(() => {
-    const interval = setInterval(() => setNow(getHSTTime()), 1000);
+    const interval = setInterval(() => now.current = getHSTTime(), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -100,12 +100,12 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
         stop={s.stop}
         trips={[]}
       >
-        {s.trips.sort((a, b) => a.arrives - b.arrives).filter(t => (t.arrives - now) > -120).map(t => {
+        {s.trips.sort((a, b) => a.arrives - b.arrives).filter(t => (t.arrives - now.current) > -120).map(t => {
           const vehicle = vehicles?.find(v => v.tripInfo?.trips.includes(t._id));
           return <StopArrival
             key={s.stop._id + t._id}
             vehicle={vehicle?.number}
-            arrives={t.arrives - now - 60 * (vehicle?.adherence ?? 0)} />;
+            arrives={t.arrives - now.current - 60 * (vehicle?.adherence ?? 0)} />;
         })}
       </StopPopup>
     }))} />;

@@ -1,5 +1,5 @@
 import type { Map } from "leaflet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, DirectionKey, LastUpdated, StopArrival } from "../mapIntermediate";
@@ -39,16 +39,17 @@ export function OneVehicle(props: { vehicle: string; }) {
     enabled: !!tripInfo
   });
 
-  const [now, setNow] = useState<number>((getHSTTime() + (vehicleInfo ? 60 * vehicleInfo.adherence : 0)) % (24 * 60 * 60));
+  const getNow = () => (getHSTTime() + (vehicleInfo ? 60 * vehicleInfo.adherence : 0)) % (24 * 60 * 60);
 
+  const now = useRef<number>(getNow());
   const [map, setMap] = useState<Map>();
   const [framed, setFramed] = useState<boolean>();
 
-  const difference = stops?.some(s => (s.trip.arrives - now) >= 18 * 60 * 60) ? 24 * 60 * 60 : 0;
+  const difference = stops?.some(s => (s.trip.arrives - now.current) >= 18 * 60 * 60) ? 24 * 60 * 60 : 0;
   useEffect(() => {
-    const interval = setInterval(() => setNow((getHSTTime() + (vehicleInfo ? 60 * vehicleInfo.adherence : 0)) % (24 * 60 * 60)), 1000);
+    const interval = setInterval(() => now.current = getNow(), 1000);
     return () => clearInterval(interval);
-  }, [vehicleInfo]);
+  }, [vehicleInfo, getNow]);
 
   useEffect(() => {
     if (map && vehicleInfo && !framed) {
@@ -80,9 +81,9 @@ export function OneVehicle(props: { vehicle: string; }) {
       stops={stops ? stops.map((s) => ({
         location: [s.stop.lat, s.stop.lon],
         stop: s.stop.code,
-        stale: s.trip.arrives - now - difference < 0,
+        stale: s.trip.arrives - now.current - difference < 0,
         popup: <StopPopup stop={s.stop}>
-          <StopArrival key={s.stop._id + s.trip._id} arrives={s.trip.arrives - now - difference} oneVehicle/>
+          <StopArrival key={s.stop._id + s.trip._id} arrives={s.trip.arrives - now.current - difference} oneVehicle/>
         </StopPopup>
       })) : []}
       vehicles={vehicleInfo ? [{ ...vehicleInfo, tripInfo }] : []} 
