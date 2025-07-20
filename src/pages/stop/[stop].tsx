@@ -14,6 +14,7 @@ import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import { api } from '~/utils/api';
 import Button, { Color } from '~/components/Button';
+import GenericTable from '~/components/GenericTable';
 
 // List all vehicles approaching a stop
 const StopIntermediary: NextPage<{stop:string}> = ({ stop }) => {
@@ -50,8 +51,10 @@ const StopIntermediary: NextPage<{stop:string}> = ({ stop }) => {
       
       <Button onClick={() => {
         if(favoriteInfo) {
-          removeFavoriteStop(stop);
-          setFI(undefined);
+          if(confirm("Are you sure you want to remove this stop from your favorites?")) {
+            removeFavoriteStop(stop);
+            setFI(undefined);
+          }
         } else {
           addFavoriteStop(stop);
           setFI({ stop });
@@ -60,40 +63,38 @@ const StopIntermediary: NextPage<{stop:string}> = ({ stop }) => {
         {favoriteInfo ? "Remove from" : "Add to"} favorites
       </Button>
 
-      <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
-          <ListItem
-            emoji='🗺️'
-            href={{
-              pathname: "/stop/[stop]/rta",
-              query: { stop }
-            }}
-          >
-            <b>See realtime arrivals</b><br/>
-            Track down a bus and when it will arrive
-          </ListItem>
-          <ListItem
-            emoji='🗓️'
-            href={{
-              pathname: "/stop/[stop]/calendar",
-              query: { stop }
-            }}
-          >
-            <b>See scheduled arrivals</b><br/>
-            See when busses will come on a specific day
-          </ListItem>
-          <ListItem
-            emoji='📡'
-            href={{
-              pathname: "/stop/[stop]/map",
-              query: { stop }
-            }}
-          >
-            <b>See realtime map</b><br/>
-            See busses approaching the stop on a map
-          </ListItem>
-        </tbody>
-      </table>
+      <GenericTable>
+        <ListItem
+          emoji='🗺️'
+          href={{
+            pathname: "/stop/[stop]/rta",
+            query: { stop }
+          }}
+        >
+          <b>See realtime arrivals</b><br/>
+          Track down a bus and when it will arrive
+        </ListItem>
+        <ListItem
+          emoji='🗓️'
+          href={{
+            pathname: "/stop/[stop]/calendar",
+            query: { stop }
+          }}
+        >
+          <b>See scheduled arrivals</b><br/>
+          See when busses will come on a specific day
+        </ListItem>
+        <ListItem
+          emoji='📡'
+          href={{
+            pathname: "/stop/[stop]/map",
+            query: { stop }
+          }}
+        >
+          <b>See realtime map</b><br/>
+          See busses approaching the stop on a map
+        </ListItem>
+      </GenericTable>
     </div>
   </PadPage>);
 }

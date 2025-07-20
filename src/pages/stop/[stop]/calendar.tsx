@@ -16,6 +16,7 @@ import { api } from "~/utils/api";
 import Button from "~/components/Button";
 import { type FavoriteStop, getFavoriteStops } from "~/lib/prefs";
 import Image from "next/image";
+import GenericTable from "~/components/GenericTable";
 
 const dotw = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 
@@ -63,28 +64,26 @@ const Calendar: NextPage<{stop:string}> = ({ stop }) => {
       {beforeToday ? "Hide" : "Show"} dates before today
     </Button>
     <div className="flex justify-center">
-    {!isLoading ? calendar ? <table className="w-full md:w-auto border-spacing-y-1 ml-4">
-      <tbody>
-        {Object.entries(calendar).filter(([d]) => beforeToday || (parseInt(d) >= today.getTime())).map(([k, ci]) => {
-          const date = new Date(parseInt(k));
-          return <ListItem key={"D"+k}
-            topEmoji
-            emoji={<Image src={`/dotw/${dotw[date.getUTCDay()]}.png`} className="min-w-10 max-w-14" alt={dotw[date.getUTCDay()] ?? ''} width={150} height={150}/>}
-            href={{
-              pathname: "/stop/[stop]/calendar/[date]",
-              query: { stop, date: getHNLSafeDateString(date) }
-            }}
-          >
-            <div className="w-fit text-left">
-              <p className="text-lg font-semibold">{toNiceDateString(date)}{parseInt(k) < today.getTime() && " (Passed)"}</p>
-              <div>{ci.length ? 
-                ci.sort((a, b) => sortRouteCodes(a.code, b.code)).map(c => <span key={c.id+c.code} className="pr-2 whitespace-nowrap inline-block"><RouteChip inline route={c}/></span>)
-              : <i>No trips planned</i>}</div>
-            </div>
-          </ListItem>
-        })}
-      </tbody>
-    </table> : <i>Could not find routes for stop for this time</i>
+    {!isLoading ? calendar ? <GenericTable>
+      {Object.entries(calendar).filter(([d]) => beforeToday || (parseInt(d) >= today.getTime())).map(([k, ci]) => {
+        const date = new Date(parseInt(k));
+        return <ListItem key={"D"+k}
+          topEmoji
+          emoji={<Image src={`/dotw/${dotw[date.getUTCDay()]}.png`} className="min-w-10 max-w-14" alt={dotw[date.getUTCDay()] ?? ''} width={150} height={150}/>}
+          href={{
+            pathname: "/stop/[stop]/calendar/[date]",
+            query: { stop, date: getHNLSafeDateString(date) }
+          }}
+        >
+          <div className="w-fit text-left max-w-[25rem]">
+            <p className="text-lg font-semibold">{toNiceDateString(date)}{parseInt(k) < today.getTime() && " (Passed)"}</p>
+            <div>{ci.length ? 
+              ci.sort((a, b) => sortRouteCodes(a.code, b.code)).map(c => <span key={c.id+c.code} className="pr-2 whitespace-nowrap inline-block"><RouteChip inline route={c}/></span>)
+            : <i>No trips planned</i>}</div>
+          </div>
+        </ListItem>
+      })}
+    </GenericTable> : <i>Could not find routes for stop for this time</i>
     : <Spinner/>}
     </div>
   </PadPage>);

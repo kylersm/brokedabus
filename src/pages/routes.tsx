@@ -6,6 +6,7 @@ import ListItem from "~/components//ListItem";
 import RouteChip from "~/components//Route";
 import { sortRouteCodes } from "~/lib/util";
 import { api } from "~/utils/api";
+import GenericTable from "~/components/GenericTable";
 
 export default function Routes() {
   const { data: routes, isError } = api.gtfs.getAllRoutes.useQuery();
@@ -19,27 +20,25 @@ export default function Routes() {
         All Routes
       </div><br/>
       {routes ? routes.length ? 
-      <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
-          {routes.sort((a, b) => sortRouteCodes(a.routeCode, b.routeCode)).map(r => <>
-            <ListItem
-              href={{
-                pathname: "/route/[route]",
-                query: { route: r.routeID === "181" ? "SKY" : r.routeCode }
-              }}
-              topArrow
-              emoji={<RouteChip route={{ code: r.routeCode, id: r.routeID }}/>}
-              topEmoji
-            >
-              <span className="text-xl font-bold">{r.gtfsInfo.name}</span><br/>
-              {r.routes.map(h => <p key={r.routeID+h.headsign}>
-                {h.headsign}
-              </p>)}
-            </ListItem>
-          </>
-          )}
-        </tbody>
-      </table> :
+      <GenericTable>
+        {routes.sort((a, b) => sortRouteCodes(a.routeCode, b.routeCode)).map(r => <>
+          <ListItem
+            href={{
+              pathname: "/route/[route]",
+              query: { route: r.routeID === "181" ? "SKY" : r.routeCode }
+            }}
+            topArrow
+            emoji={<RouteChip route={{ code: r.routeCode, id: r.routeID }}/>}
+            topEmoji
+          >
+            <span className="text-xl font-bold">{r.gtfsInfo.name}</span><br/>
+            <ul className="ml-4 list-disc">{r.routes.map(h => <li key={r.routeID+h.headsign}>
+              {h.direction ? '->' : '<-'} {h.headsign}
+            </li>)}</ul>
+          </ListItem>
+        </>
+        )}
+      </GenericTable> :
       <b>Could not find any routes</b> :
       <Spinner/>}
     </div>

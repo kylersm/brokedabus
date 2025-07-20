@@ -18,6 +18,7 @@ import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import { type FavoriteStop, getFavoriteStops } from '~/lib/prefs';
 import Image from 'next/image';
+import GenericTable from '~/components/GenericTable';
  
 // List all vehicles approaching a stop
 const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
@@ -72,7 +73,7 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
           { // show filter by route
             deduplicatedRoutes.length > 1 && <>Filter by route:
               { /* wont center on Safari mobile */ }
-              <select className='ml-1 text-center safari-text-center border-black border-2 rounded-2xl w-fit' onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}>
+              <select className='ml-1 px-2 text-center safari-text-center border-black border-2 rounded-2xl w-fit' onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}>
                 <option value={"allbusses"} defaultChecked>ALL</option>
                 {deduplicatedRoutes.map(r => <option key={r.routeCode} value={r.routeCode}>{r.routeCode}</option>)}
               </select>
@@ -94,14 +95,12 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
           }}><span className='underline'>View map</span></Link>}
       </div>
 
-      {arrivals ? arrivals.length ? <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
-          {arrivals
-            .filter(a => !routeFilter || a.arrival?.trip.routeCode === routeFilter)
-            .map(a => <RTAEntry key={a.arrival?.id} arrival={a} stop={routesServed.info} now={now}/>)
-          }
-        </tbody>
-      </table> : 
+      {arrivals ? arrivals.length ? <GenericTable>
+        {arrivals
+          .filter(a => !routeFilter || a.arrival?.trip.routeCode === routeFilter)
+          .map(a => <RTAEntry key={a.arrival?.id} arrival={a} stop={routesServed.info} now={now}/>)
+        }
+      </GenericTable> : 
       'No arrivals listed' :
       // data still being loaded
       <Spinner/>}

@@ -45,15 +45,15 @@ export default function ListItem(props: PropsWithChildren & (TextItemProp | NoIc
   }
 
   const finalElement = <tr>
-    <th className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
+    <td className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
       <Linkify href={props.href}>
         {SideIcon}
       </Linkify>
-    </th>
+    </td>
 
-    <td className="min-w-max h-fit min-h-12 pr-2 align-middle">
+    <td className="h-fit min-h-12 pr-2 align-middle">
       <Linkify href={props.href}>
-        <div>{props.children}</div>
+        <div className="w-fit">{props.children}</div>
       </Linkify>
     </td>
 

@@ -7,6 +7,7 @@ import Link from "next/link";
 import PadPage from "~/components//templates/PadPage";
 import HeadTitle from "~/components//HeadTitle";
 import { api } from "~/utils/api";
+import GenericTable from "~/components/GenericTable";
 
 export default function Route() {
   const [route, setRoute] = useState<string>();
@@ -42,25 +43,23 @@ export default function Route() {
       <div>
         Showing {routeInfo.routes.length} subroute{routeInfo.routes.length !== 1 && 's'}
       </div>
-      <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
-          {routeInfo.routes.sort((a, b) => sortString(a.shapeID, b.shapeID)).map(route => <ListItem
-            key={route.shapeID}
-            href={{
-              pathname: "/shape/[shape]",
-              query: { shape: route.shapeID }
-            }}
-            emoji={<span className="md:block hidden"><RouteChip route={{ code: routeInfo.routeCode, id: routeInfo.routeID }}/></span>}
-            topEmoji
-          >
-            <span className="md:hidden inline"><RouteChip route={{ code: routeInfo.routeCode, id: routeInfo.routeID }} inline/> </span>
-              <b>{route.headsign}</b><br/>
-              Starts from Stop {route.firstStopCode} - <br className="md:hidden inline"/> <span className="md:not-italic italic">{route.firstStopName}<br/>
-              <i>Shape ID: {route.shapeID}</i>
-            </span>
-          </ListItem>)}
-        </tbody>
-      </table></> :
+      <GenericTable>
+        {routeInfo.routes.sort((a, b) => sortString(a.shapeID, b.shapeID)).map(route => <ListItem
+          key={route.shapeID}
+          href={{
+            pathname: "/shape/[shape]",
+            query: { shape: route.shapeID }
+          }}
+          emoji={<span className="md:block hidden"><RouteChip route={{ code: routeInfo.routeCode, id: routeInfo.routeID }}/></span>}
+          topEmoji
+        >
+          <span className="md:hidden inline"><RouteChip route={{ code: routeInfo.routeCode, id: routeInfo.routeID }} inline/> </span>
+            <b>{route.headsign}</b><br/>
+            Starts from Stop {route.firstStopCode} - <br className="md:hidden inline"/> <span className="md:not-italic italic">{route.firstStopName}<br/>
+            <i>Shape ID: {route.shapeID}</i>
+          </span>
+        </ListItem>)}
+      </GenericTable></> :
       <b>Route not found</b> :
       <Spinner/> :
       <>Must enter a route</> :

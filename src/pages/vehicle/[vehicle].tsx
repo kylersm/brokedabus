@@ -16,6 +16,7 @@ import Button from '~/components/Button';
 import { getExpectedTripFromBC } from '~/lib/GTFSBinds';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
+import GenericTable from '~/components/GenericTable';
 
 const staleColor = '#999999';
 const isArrivalFresh = (arrived: number) => arrived + 65 >= 0;
@@ -158,8 +159,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       <Button onClick={() => setPB(!seePrevBlocks)}>
         {seePrevBlocks ? "Hide" : "Show"} previous trips
       </Button>
-      <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
+      <GenericTable>
         {vehicleInfo.block.trips.filter((_, i, a) => seePrevBlocks || a.findIndex(b3 => b3.trips === tripInfo?.trips) <= i).map((b, i, a) => <ListItem 
           emoji={<RouteChip route={{ code: b.routeCode, id: b.routeId }}/>}
           topEmoji
@@ -183,8 +183,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
             Trip {b.trips.join(', ')} | {HSTify(new Date((b.firstArrives + HST_UTC_OFFSET) * 1000), true)} - {HSTify(new Date((b.lastDeparts + HST_UTC_OFFSET) * 1000), true)}<br/>
           </div>
         })()}</ListItem>)}
-        </tbody>
-      </table>
+      </GenericTable>
       <div className='italic mb-14'>~End of block~</div>
     </>}
   </PadPage>);

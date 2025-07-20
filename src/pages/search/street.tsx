@@ -6,6 +6,7 @@ import ListTrips from "~/components//ListTrips";
 import PadPage from "~/components//templates/PadPage";
 import HeadTitle from "~/components//HeadTitle";
 import { api } from "~/utils/api";
+import GenericTable from "~/components/GenericTable";
 
 export default function Street() {
   const [street, setStreet] = useState<string>();
@@ -46,27 +47,25 @@ export default function Street() {
 
       {!error ? street ? stops ? stops.length ? <>
         <div>Showing {stops.length} stop{stops.length > 1 ? 's' : ''}</div>
-        <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-          <tbody>
-            {stops.map(stop => ({ ...stop, info: { ...stop.info, name: stop.info.name.split(new RegExp(`(${escapeRegex(street)})`, "ig")) }}))
-            .sort((a, b) => 
-              a.info.name.reduce(sortByContext, 0) -
-              b.info.name.reduce(sortByContext, 0)
-            ).map(stop => <ListItem
-              key={stop.info._id}
-              topArrow
-              href={{
-                pathname: "/stop/[stop]",
-                query: { stop: stop.info.code }
-              }}
-            >
-              <b>{isRailStation(stop.info.code) ? "Rail Stop" : "Stop"} {stop.info.code} - {stop.info.name.map(s => 
-                s.toLowerCase() === street.toLowerCase() ? <><span className="bg-yellow-300 text-red-600">{s}</span></> : s
-              )}</b><br/>
-              <ListTrips trips={stop.trips}/>
-            </ListItem>)}
-          </tbody>
-        </table>
+        <GenericTable>
+          {stops.map(stop => ({ ...stop, info: { ...stop.info, name: stop.info.name.split(new RegExp(`(${escapeRegex(street)})`, "ig")) }}))
+          .sort((a, b) => 
+            a.info.name.reduce(sortByContext, 0) -
+            b.info.name.reduce(sortByContext, 0)
+          ).map(stop => <ListItem
+            key={stop.info._id}
+            topArrow
+            href={{
+              pathname: "/stop/[stop]",
+              query: { stop: stop.info.code }
+            }}
+          >
+            <b>{isRailStation(stop.info.code) ? "Rail Stop" : "Stop"} {stop.info.code} - {stop.info.name.map(s => 
+              s.toLowerCase() === street.toLowerCase() ? <><span className="bg-yellow-300 text-red-600">{s}</span></> : s
+            )}</b><br/>
+            <ListTrips trips={stop.trips}/>
+          </ListItem>)}
+        </GenericTable>
       </> :
       // no stops
       <b>No stops found</b> :
