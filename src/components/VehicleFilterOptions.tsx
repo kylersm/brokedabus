@@ -62,23 +62,25 @@ export default function VehicleFilterOptions(props: {
           <hr className="md:hidden my-2"/>
         </div>
         <div className="mx-auto w-fit space-y-3">
-          <div className="w-full md:flex block items-center">
-            <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Last Message:</p>
-            <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap justify-center">
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.DAY} onChange={() => setFilters({ lastMessage: ActiveType.DAY})}/>Last 24 hours</label>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.WEEK} onChange={() => setFilters({ lastMessage: ActiveType.WEEK})}/>Last 7 days</label>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.MONTH} onChange={() => setFilters({ lastMessage: ActiveType.MONTH})}/>Last 30 days</label>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.ALL} onChange={() => setFilters({ lastMessage: ActiveType.ALL})}/>Anytime</label>
+          <div className="flex md:block md:space-y-3">
+            <div className="w-full md:flex block items-center">
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Last Message:</p>
+              <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap md:justify-center">
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.DAY} onChange={() => setFilters({ lastMessage: ActiveType.DAY})}/>Last 24 hours</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.WEEK} onChange={() => setFilters({ lastMessage: ActiveType.WEEK})}/>Last 7 days</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.MONTH} onChange={() => setFilters({ lastMessage: ActiveType.MONTH})}/>Last 30 days</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.ALL} onChange={() => setFilters({ lastMessage: ActiveType.ALL})}/>Anytime</label>
+              </div>
             </div>
-          </div>
-          <div className="w-full md:flex block items-center">
-            <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Sort:</p>
-            <div className="!ml-0 md:ml-0 space-x-6 flex flex-wrap justify-center">
-              <label className="md:block">Ascending? <input type="checkbox" className="ml-1" checked={filters.ascendSort} onChange={() => setFilters({ ascendSort: !filters.ascendSort })}/></label>
-              <div className="basis-full h-0 md:hidden"/>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.DATE} onChange={() => setFilters({ sortType: SortType.DATE })}/>Last message</label>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.NUMBER} onChange={() => setFilters({ sortType: SortType.NUMBER })}/>Vehicle number</label>
-              <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ROUTE} onChange={() => setFilters({ sortType: SortType.ROUTE })}/>Route</label>
+            <div className="w-full md:flex block items-center">
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Sort:</p>
+              <div className="!ml-0 md:ml-0 md:space-x-6 flex flex-wrap md:justify-center">
+                <label className="md:block"><span className="hidden md:inline">Ascending? </span><input type="checkbox" className="md:ml-1" checked={filters.ascendSort} onChange={() => setFilters({ ascendSort: !filters.ascendSort })}/><span className="inline md:hidden"> Ascending?</span></label>
+                <div className="basis-full h-0 md:hidden"/>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.DATE} onChange={() => setFilters({ sortType: SortType.DATE })}/>Last message</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.NUMBER} onChange={() => setFilters({ sortType: SortType.NUMBER })}/>Vehicle number</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ROUTE} onChange={() => setFilters({ sortType: SortType.ROUTE })}/>Route</label>
+              </div>
             </div>
           </div>
           <div className="w-full md:flex block items-center">
@@ -94,7 +96,7 @@ export default function VehicleFilterOptions(props: {
           Route Filters <div title={'Click to ' + (showRF ? 'hide' : 'show') + ' route filters'} className={"inline-flex font-normal text-gray-500 " + (showRF ? '' : 'rotate-180')}>V</div>
         </div>
 
-        {showRF && <><div className="w-fit gap-x-7 text-center overflow-x-auto flex flex-wrap justify-center mx-auto">
+        {showRF ? <><div className="w-fit gap-x-7 text-center overflow-x-auto flex flex-wrap justify-center mx-auto">
           <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
             setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.urban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
           >Select all Urban</span>
@@ -126,7 +128,7 @@ export default function VehicleFilterOptions(props: {
                   filters.routeIdFilters.concat(r._id)})
             }/> <span><RouteChip route={{ code: r.code, id: r._id }}/></span> {r.name}
           </label>
-        )}</div></>}
+        )}</div></> : <p className="mb-4 italic">Route filters are currently hidden.</p>}
 
         <div className="mx-auto w-fit space-y-3">
           <div className="font-bold text-2xl">
