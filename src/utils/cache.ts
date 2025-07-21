@@ -152,7 +152,7 @@ export async function getGTFS() {
   if (fetchingGTFS) return GTFS_FEED;
   fetchingGTFS = true;
   const now = Date.now();
-  if (lastFetchedGTFS < 0 || (GTFS_FEED.feed_info[0] && YYYYMMDDToTime(GTFS_FEED.feed_info[0].feed_end_date, true) <= now)) {
+  if (lastFetchedGTFS < 0 || (GTFS_FEED.feed_info[0] && (YYYYMMDDToTime(GTFS_FEED.feed_info[0].feed_end_date, true) + 10 * 60 * 60 * 1000) <= now)) {
     const feedReq = (await axios.get<Buffer>(GTFS_FEED_URL, { responseType: "arraybuffer" }));
     const head = Date.parse(feedReq.headers["last-modified"] as string);
 
