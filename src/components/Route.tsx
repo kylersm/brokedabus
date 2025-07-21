@@ -18,7 +18,7 @@ export default function RouteChip(props: { route: SuperficialRoute; inline?: boo
   // make 'w' lowercase
   const isWaikiki = props.route.code.toUpperCase().startsWith('W');
   return <div 
-    className={`h-fit text-white text-center px-3 min-w-12 rounded-sm ${props.inline ? "w-fit inline py-0.5" : "w-full max-w-16"} ${props.inactive ? "italic" : "font-semibold"}`} 
+    className={`h-fit break-keep text-white text-center px-3 min-w-12 rounded-sm ${props.inline ? "w-fit inline py-0.5" : "w-full max-w-16"} ${props.inactive ? "italic" : "font-semibold"}`} 
     style={{ backgroundColor: getColorFromRoute(props.route) }}
   >
     <span className={isCExpress ? "text-[75%] italic" : "hidden"}>三</span>
