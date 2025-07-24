@@ -87,7 +87,7 @@ export function AllBusses() {
 
       vehicles={filterVehicles(vehicles, filters)}
       vehicleHook={setOpenVehicles}
-      wipeBus
+      wipeBus={(_) => true}
       stops={allStops?.map(s => ({
         location: [s.stop.lat, s.stop.lon],
         stop: s.stop.code,
