@@ -338,7 +338,7 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
   
   const blockTrips = feed.trips.filter(t => t.block_id === trip.block_id && t.service_id === trip.service_id);
   const btt = blockTrips.map(t => t.trip_id);
-  const stopTimes = feed.stop_times.filter(st => btt.includes(st.trip_id));
+  const stopTimes = feed.beg_end_stop_times.filter(st => btt.includes(st.trip_id));
 
   const routes = feed.routes.filter(r => blockTrips.map(t => t.route_id).includes(r.route_id));
 
@@ -391,7 +391,6 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
     _id: trip.block_id,
     name: trip.block,
     trips: ranking
-      
   };
 }
 

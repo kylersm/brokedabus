@@ -89,7 +89,6 @@ export async function fetchVehicles() {
   fetchingVehicles = true;
   const now = Date.now();
   if (lastFetchedVehicles < 0 || now - lastFetchedVehicles > 7.5 * 1000) {
-
     const xml = (await axios.get(`${BUSAPI}vehicle/?key=${env.HEA_KEY}`)).data as string;
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
@@ -100,9 +99,14 @@ export async function fetchVehicles() {
       b.last_message.getTime() - a.last_message.getTime()
     );
 
-    for(const nv of newVehicles) {
+    newVehicles.forEach(nv => {
       const v = vehicles[nv.number];
-      const block = v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : nv.trip ? getBlockInfo(GTFS_FEED, nv.trip) : undefined;
+      if(!nv.trip) return;
+      const block = GTFS_FEED.agency.length === 0 ? undefined :
+      // determine if the current trip ID belongs to the cached block, then continue using the cached block
+       v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : 
+      // otherwise get a new block from the new trip ID, or undefined if there is no trip
+        nv.trip ? getBlockInfo(GTFS_FEED, nv.trip) : undefined;
       const adherence = // set adherence to whatever comes in, if not previously specified.
         (!v || isNaN(v.adherence) || lastFetchedVehicles < 0) ? nv.adherence 
         // otherwise, set it to the avg of the two
@@ -112,7 +116,7 @@ export async function fetchVehicles() {
         block,
         adherence
       };
-    }
+    });
     lastFetchedVehicles = now;
   }
   fetchingVehicles = false;
@@ -131,6 +135,8 @@ export interface GTFSFeed {
   routes: GTFS.Route[];
   shapes: GTFS.Shape[];
   stop_times: GTFS.StopTimes[];
+  // used in getBlockInfo
+  beg_end_stop_times: GTFS.StopTimes[];
   stops: GTFS.Stop[];
   trips: GTFS.Trip[];
 }
@@ -142,6 +148,7 @@ const GTFS_FEED: GTFSFeed = {
   routes: [],
   shapes: [],
   stop_times: [],
+  beg_end_stop_times: [],
   stops: [],
   trips: []
 };
@@ -173,6 +180,20 @@ export async function getGTFS() {
       }
       (GTFS_FEED[key] as unknown[]) = Papa.parse<unknown>(info, { header: true, skipEmptyLines: true }).data;
     }
+
+    // go through whole array to build indices of start and end points
+    for(let i = 0; i < GTFS_FEED.stop_times.length; i++) {
+      const entry = GTFS_FEED.stop_times[i];
+      // if is starting point
+      if(entry?.stop_sequence === "1") {
+        // add this index
+        GTFS_FEED.beg_end_stop_times.push(entry);
+        // if not first element, also add the one behind (which is the last stop)
+        if(i !== 0) GTFS_FEED.beg_end_stop_times.push(GTFS_FEED.stop_times[i - 1]!);
+      }
+    }
+    // add length -1 as index
+    GTFS_FEED.beg_end_stop_times.push(GTFS_FEED.stop_times[GTFS_FEED.stop_times.length - 1]!);
 
     console.log("GTFS feed received at", new Date());
     lastFetchedGTFS = now;
