@@ -21,7 +21,7 @@ const getArrivals = async(stop: string): Promise<(Partial<Types.PolishedArrivalC
   const feed = await getGTFS();
   const vehicles = Object.values(await fetchVehicles());
   const arrivals = (await axios.get<ArrivalsContainer>(`${BUSAPI}arrivalsJSON/?key=${env.HEA_KEY}&stop=${stop}`)).data.arrivals;
-  return arrivals.map(a => GTFS.toPolishedArrival(feed, a, a.vehicle !== "???" ? vehicles.find(v => v.number === a.vehicle) ?? { 
+  return arrivals.map(a => GTFS.toPolishedArrival(feed, a, a.vehicle !== "???" ? vehicles.find(v => v.number === a.vehicle || v.block?.trips.some(t => t.trips.includes(a.trip))) ?? { 
     adherence: 0,
     last_message: new Date(0),
     lat: parseFloat(a.latitude),
