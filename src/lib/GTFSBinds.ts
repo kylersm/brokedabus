@@ -25,7 +25,7 @@ export const getExpectedTripFromBC = (block: GTFS.BlockContainer | undefined, tr
 
 export const getNextTripLayover = (block?: GTFS.BlockContainer, trip?: GTFS.PolishedBlockTrip): { start: number; end: number; next?: GTFS.PolishedBlockTrip; } | undefined => {
   if(!block || !trip) return undefined;
-  const nextTrip = block.trips.find((_, i) => block.trips.findIndex(t2 => t2.trips === trip.trips) + 1 === i);
+  const nextTrip = block.trips.find((_, i) => block.trips.findIndex(t2 => trip.trips.every(t3 => t2.trips.includes(t3))) + 1 === i);
   if(!nextTrip) return { start: trip.firstArrives, end: trip.lastDeparts };
   return { start: trip.firstArrives, end: trip.lastDeparts, next: nextTrip };
 }

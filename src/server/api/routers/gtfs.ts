@@ -243,22 +243,18 @@ const calculateDistance = (shapes: GTFS.PolishedShape[]): number => {
   0);
 }
 
-export const getDistWithFutureTripToPoint = (
+const getDistWithFutureTripToPoint = (
   feed: GTFSFeed, 
   location: [number, number],
   destination: [number, number],
-  currentTrip: string | undefined,
-  futureTrip: Types.PolishedArrival,
+  currentShape: string | undefined,
+  futureShape: string,
 ) => {
   let currentTripToEnd = 0;
-  if (currentTrip !== undefined && !futureTrip.trip.trips.includes(currentTrip)) {
-    const currentShid = getShIDByTripID(feed, currentTrip);
-    if (currentShid) {
-      currentTripToEnd = getDistToEnd(feed, location, currentShid); 
-    }
-  }
+  if (currentShape !== undefined && currentShape !== futureShape)
+    currentTripToEnd = getDistToEnd(feed, location, currentShape);
 
-  return currentTripToEnd + getDistToNearestShapeToPoint(feed, location, destination, futureTrip.trip.shapeId);
+  return currentTripToEnd + getDistToNearestShapeToPoint(feed, location, destination, futureShape);
 }
 
 // internal
@@ -308,22 +304,31 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
   const date = arrival.date.split('/').map(x => parseInt(x));
   const isNoon = arrival.stopTime.endsWith("PM");
   const time = arrival.stopTime.slice(0, -3).split(":").map(x => parseInt(x));
-  if(isNoon && time[0] !== 12) time[0]! += 12;
+  if(isNoon) {
+    if(time[0] !== 12)
+      time[0]! += 12;
+  } else {
+    if(time[0] === 12)
+      time[0] -= 12;
+  }
   const stopTime = new Date(`${date[2]!}-${('0' + date[0]).slice(-2)}-${('0' + date[1]).slice(-2)}T${('0' + time[0]).slice(-2)}:${('0' + time[1]).slice(-2)}:00.000-10:00`);
+  const arrivalTrip = getTrip(feed, arrival.trip) ?? {
+    direction: 0,
+    displayCode: '',
+    headsign: decode(arrival.headsign, { level: "xml" }),
+    routeCode: arrival.route,
+    routeId: '',
+    shapeId: arrival.shape,
+    trips: [arrival.trip]
+  };
+
   return {
     vehicle: tripVehicle,
     arrival: {
-      trip: getTrip(feed, arrival.trip) ?? {
-        direction: 0,
-        displayCode: '',
-        headsign: decode(arrival.headsign, { level: "xml" }),
-        routeCode: arrival.route,
-        routeId: '',
-        shapeId: arrival.shape,
-        trips: [arrival.trip]
-      },
+      trip: arrivalTrip,
       departing,
-      distance: stopInfo && tripVehicle?.tripInfo ? getDistToNearestShapeToPoint(feed, [tripVehicle.lat, tripVehicle.lon], [stopInfo.lat, stopInfo.lon], tripVehicle.tripInfo.shapeId) : -1,
+      distance: stopInfo && tripVehicle ? 
+        getDistWithFutureTripToPoint(feed, [tripVehicle.lat, tripVehicle.lon], [stopInfo.lat, stopInfo.lon], tripVehicle.tripInfo?.shapeId, arrivalTrip.shapeId) : 0,
       estimated: switchEstimated(parseInt(arrival.estimated)),
       status: switchCanceled(parseInt(arrival.canceled)),
       id: arrival.id,
@@ -337,20 +342,18 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
   if(!trip?.block_id) return undefined;
   
   const blockTrips = feed.trips.filter(t => t.block_id === trip.block_id && t.service_id === trip.service_id);
-  const btt = blockTrips.map(t => t.trip_id);
-  const stopTimes = feed.beg_end_stop_times.filter(st => btt.includes(st.trip_id));
 
   const routes = feed.routes.filter(r => blockTrips.map(t => t.route_id).includes(r.route_id));
 
   let ranking: GTFS.PolishedBlockTrip[] = [];
   for(const trip of blockTrips) {
-    const tripSt = stopTimes.filter(t => t.trip_id === trip.trip_id);
-    if(!tripSt.length) continue;
+    const tripSt = feed.beg_end_stop_times[trip.trip_id];
+    if(!tripSt?.start || !tripSt.stop) continue;
     const route = routes.find(r => r.route_id === trip.route_id);
     if(!route) continue;
 
-    const firstArrives = Math.min(...tripSt.map(st => timeFromHNLString(st.arrival_time)));
-    const lastDeparts = Math.max(...tripSt.map(st => timeFromHNLString(st.departure_time)));
+    const firstArrives = timeFromHNLString(tripSt.start);
+    const lastDeparts = timeFromHNLString(tripSt.stop);
 
     const current = {
       trips: [trip.trip_id],

@@ -101,8 +101,7 @@ export async function fetchVehicles() {
 
     newVehicles.forEach(nv => {
       const v = vehicles[nv.number];
-      if(!nv.trip) return;
-      const block = GTFS_FEED.agency.length === 0 ? undefined :
+      const block = !v?.trip || GTFS_FEED.agency.length === 0 ? undefined :
       // determine if the current trip ID belongs to the cached block, then continue using the cached block
        v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : 
       // otherwise get a new block from the new trip ID, or undefined if there is no trip
@@ -127,6 +126,11 @@ const GTFS_FEED_URL   = "https://www.thebus.org/transitdata/production/google_tr
 const GTFS_KEYS: (keyof typeof GTFS_FEED)[] = ["agency", "calendar", "calendar_dates", "feed_info", "routes", "shapes", "stop_times", "stops", "trips"];
 
 let    GTFS_LAST_MOD = 0;
+interface StopTimeForBlock {
+  start?: string;
+  stop?: string;
+  sequences?: number;
+}
 export interface GTFSFeed {
   agency: GTFS.Agency[];
   calendar: GTFS.Calendar[];
@@ -136,7 +140,7 @@ export interface GTFSFeed {
   shapes: GTFS.Shape[];
   stop_times: GTFS.StopTimes[];
   // used in getBlockInfo
-  beg_end_stop_times: GTFS.StopTimes[];
+  beg_end_stop_times: Record<string, StopTimeForBlock>;
   stops: GTFS.Stop[];
   trips: GTFS.Trip[];
 }
@@ -148,7 +152,7 @@ const GTFS_FEED: GTFSFeed = {
   routes: [],
   shapes: [],
   stop_times: [],
-  beg_end_stop_times: [],
+  beg_end_stop_times: {},
   stops: [],
   trips: []
 };
@@ -182,19 +186,22 @@ export async function getGTFS() {
     }
 
     // go through whole array to build indices of start and end points
-    for(let i = 0; i < GTFS_FEED.stop_times.length; i++) {
-      const entry = GTFS_FEED.stop_times[i];
+    // console.log(GTFS_FEED.stop_times.map(x => ({ s: x.stop_sequence, t: x.trip_id })));
+    console.time("block");
+    for(const st of GTFS_FEED.stop_times) {
+      const sequences = parseInt(st.stop_sequence);
+      let entry: StopTimeForBlock | undefined = GTFS_FEED.beg_end_stop_times[st.trip_id];
+      if(!entry)
+        entry = GTFS_FEED.beg_end_stop_times[st.trip_id] = { stop: st.departure_time, sequences };
       // if is starting point
-      if(entry?.stop_sequence === "1") {
-        // add this index
-        GTFS_FEED.beg_end_stop_times.push(entry);
-        // if not first element, also add the one behind (which is the last stop)
-        if(i !== 0) GTFS_FEED.beg_end_stop_times.push(GTFS_FEED.stop_times[i - 1]!);
+      if(sequences === 1)
+        entry.start = st.arrival_time;
+      if(sequences > (entry.sequences ?? 0)) {
+        entry.stop = st.departure_time;
+        entry.sequences = sequences;
       }
     }
-    // add length -1 as index
-    GTFS_FEED.beg_end_stop_times.push(GTFS_FEED.stop_times[GTFS_FEED.stop_times.length - 1]!);
-
+    console.timeEnd("block");
     console.log("GTFS feed received at", new Date());
     lastFetchedGTFS = now;
   }
