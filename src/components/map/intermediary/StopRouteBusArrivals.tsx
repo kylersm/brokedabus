@@ -28,7 +28,13 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
 
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
 
-  const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ shids: arrivals?.filter(a => a.vehicle && openVehicles.includes(a.vehicle.number)).map(a => a.arrival.trip.shapeId) ?? [] }, {
+  const fullOpenVehicles = arrivals?.filter(a => a.vehicle && openVehicles.includes(a.vehicle.number)) ?? [];
+  const arrivalShapes = fullOpenVehicles.map(a => a.arrival.trip.shapeId);
+  const currentShapes = fullOpenVehicles.map(a => a.vehicle?.tripInfo?.shapeId).filter(s => typeof s === "string");
+
+  const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ 
+    shids: arrivalShapes.concat(...currentShapes)
+  }, {
     enabled: !!arrivals?.length
   });
 
@@ -67,7 +73,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
       {deduplicatedRoutes.length > 1 && <>Filter by route:
         { /* wont center on Safari mobile */ }
         <select 
-          className='ml-1 text-center safari-text-center border-black border-2 rounded-2xl w-fit' 
+          className='ml-1 px-2 text-center safari-text-center border-black border-2 rounded-2xl w-fit' 
           onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}
           defaultValue={routeSlug ?? 'allbusses'}
         >
@@ -97,5 +103,6 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
     routePath={shapes?.map(s => ({
       direction: s.direction === 1 ? 'East' : 'West',
       routePath: s,
+      unfocused: !currentShapes.includes(s.shapeId)
     }))} />;
 }
