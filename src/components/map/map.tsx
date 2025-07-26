@@ -100,10 +100,15 @@ export default function Map(props: {
       if(Array.isArray(vehicles)) {
         const now = Date.now();
         if(wipeBus !== undefined) {
-          for(const [key, value] of Object.entries<TrackableSuperficialVehicle>(vehicleCache.current))
+          for(const [key, value] of Object.entries<TrackableSuperficialVehicle>(vehicleCache.current)) {
             // when wiping, remove if a relevant vehicle wasn't seen in the past 2 minutes, or if it passes the predicate function (if provided)
-            if (vehicles.some(v => v.number === key && ((now - value.lastUpdated) > (2 * 60 * 1000) || (wipeBus !== true && wipeBus(v)))))
+            const foundVehicle = vehicles.find(v => v.number === key);
+            if(!foundVehicle) {
+              if((now - value.lastUpdated) > (2 * 60 * 1000))
+                delete vehicleCache.current[key];
+            } else if(wipeBus !== true && wipeBus(foundVehicle))
               delete vehicleCache.current[key];
+          }
         }
 
         for(const vehicle of vehicles) {
