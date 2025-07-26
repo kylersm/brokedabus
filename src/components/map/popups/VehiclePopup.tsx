@@ -62,7 +62,8 @@ export default function VehiclePopup(props: {
 
   const now = getHSTTime();
   const tripNow = now + vehicle.adherence * 60;
-  const nextDelta = (blocks?.next?.firstArrives ?? 0) > (24 * 60 * 60) ? 24 * 60 * 60 : 0;
+  const currentIsTmrw = tripNow >= 24 * 60 * 60;
+  const nextDelta = (blocks?.next?.firstArrives ?? 0) > (24 * 60 * 60) && currentIsTmrw ? 24 * 60 * 60 : 0;
   const nextTrip = blocks?.next ? <div className="mt-2">
     <b>Next trip:</b> <RouteChip route={{ code: blocks.next.routeCode, id: blocks.next.routeId }} inline/> {blocks.next.headsign}
   </div> : <></>;
@@ -75,8 +76,9 @@ export default function VehiclePopup(props: {
       <div className="text-center mb-2">{routeChip} {headsign}</div>
     </>}
     {arrival &&  <>
-      {!vehicle?.tripInfo?.trips.some(t => arrival.trip.trips.includes(t)) && <i>Future Trip: <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</i>}
-      <div>{`${arrival.departing ? "Departing" : "Arriving"} ${arrivalString(arrival.stopTime)}`}, {quantifyMiles(arrival.distance / 1603.344)} away from stop<br/></div>
+      <div className="font-bold text-center">{`${arrival.departing ? "Departing" : "Arriving"} ${arrivalString(arrival.stopTime)}`}</div>
+      <div className="italic text-center -mb-2">{quantifyMiles(arrival.distance / 1603.344)} away from stop</div>
+      {!vehicle?.tripInfo?.trips.some(t => arrival.trip.trips.includes(t)) && <i><br/>As <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</i>}<br/>
     </>}
     {schedule}<br/>
     {blocks && <>{
