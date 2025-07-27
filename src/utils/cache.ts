@@ -109,7 +109,7 @@ export async function fetchVehicles() {
       const adherence = // set adherence to whatever comes in, if not previously specified.
         (!v || isNaN(v.adherence) || lastFetchedVehicles < 0) ? nv.adherence 
         // otherwise, set it to the avg of the two
-        : ((v.adherence + nv.adherence) / 2)
+        : ((v.adherence + nv.adherence) / 2);
       vehicles[nv.number] = {
         ...nv, 
         block,
@@ -129,7 +129,8 @@ let    GTFS_LAST_MOD = 0;
 interface StopTimeForBlock {
   start?: string;
   stop?: string;
-  sequences?: number;
+  minSeq?: number;
+  maxSeq?: number;
 }
 export interface GTFSFeed {
   agency: GTFS.Agency[];
@@ -186,22 +187,26 @@ export async function getGTFS() {
     }
 
     // go through whole array to build indices of start and end points
-    // console.log(GTFS_FEED.stop_times.map(x => ({ s: x.stop_sequence, t: x.trip_id })));
-    console.time("block");
     for(const st of GTFS_FEED.stop_times) {
       const sequences = parseInt(st.stop_sequence);
+      // get existing entry or make a new one if it doesn't exist
       let entry: StopTimeForBlock | undefined = GTFS_FEED.beg_end_stop_times[st.trip_id];
       if(!entry)
-        entry = GTFS_FEED.beg_end_stop_times[st.trip_id] = { stop: st.departure_time, sequences };
-      // if is starting point
-      if(sequences === 1)
+        entry = GTFS_FEED.beg_end_stop_times[st.trip_id] = { 
+          start: st.arrival_time, 
+          stop: st.departure_time, 
+          minSeq: sequences,
+          maxSeq: sequences 
+        };
+      // find the first and last sequences, then assign appropriate times
+      if(sequences < (entry.minSeq ?? 2)) {
         entry.start = st.arrival_time;
-      if(sequences > (entry.sequences ?? 0)) {
+        entry.minSeq = sequences;
+      } if(sequences > (entry.maxSeq ?? 0)) {
         entry.stop = st.departure_time;
-        entry.sequences = sequences;
+        entry.maxSeq = sequences;
       }
     }
-    console.timeEnd("block");
     console.log("GTFS feed received at", new Date());
     lastFetchedGTFS = now;
   }
