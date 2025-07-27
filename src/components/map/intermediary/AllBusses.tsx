@@ -54,6 +54,8 @@ export function AllBusses() {
     includeUnknown: false
   });
 
+  const filteredVehicles = filterVehicles(vehicles, filters);
+  const numbers = filteredVehicles?.map(v => v.number) ?? [];
   const [showFilter, setSF] = useState<boolean>(false);
 
   const now = useRef<number>(getHSTTime());
@@ -85,9 +87,9 @@ export function AllBusses() {
         routePath: s,
       }))}
 
-      vehicles={filterVehicles(vehicles, filters)}
+      vehicles={filteredVehicles}
       vehicleHook={setOpenVehicles}
-      wipeBus={(_) => true}
+      wipeBus={(v) => !numbers.includes(v.number)}
       stops={allStops?.map(s => ({
         location: [s.stop.lat, s.stop.lon],
         stop: s.stop.code,

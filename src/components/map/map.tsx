@@ -104,7 +104,7 @@ export default function Map(props: {
             // when wiping, remove if a relevant vehicle wasn't seen in the past 2 minutes, or if it passes the predicate function (if provided)
             const foundVehicle = vehicles.find(v => v.number === key);
             if(!foundVehicle) {
-              if((now - value.lastUpdated) > (2 * 60 * 1000))
+              if(wipeBus !== true || (now - value.lastUpdated) > (2 * 60 * 1000))
                 delete vehicleCache.current[key];
             } else if(wipeBus !== true && wipeBus(foundVehicle))
               delete vehicleCache.current[key];
