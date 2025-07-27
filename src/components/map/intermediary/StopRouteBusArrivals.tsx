@@ -69,7 +69,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
     refHook={setMap}
     header={<>{routeFilter ?
       <>Incoming busses at Stop {stop.info.code} - {stop.info.name} for route <RouteChip route={{ code: routeFilter }} inline /></> :
-      <>Incoming busses for Stop {stop.info.code} - {stop.info.name}</>} ({arrivalsWithFilters?.length} bus{arrivalsWithFilters?.length === 1 ? '' : "ses"})<br/>
+      <>Incoming busses for Stop {stop.info.code} - {stop.info.name}</>} {arrivalsWithFilters ? <>({arrivalsWithFilters?.length} bus{arrivalsWithFilters?.length === 1 ? '' : "ses"})</> : ''}<br/>
       {deduplicatedRoutes.length > 1 && <>Filter by route:
         { /* wont center on Safari mobile */ }
         <select 
