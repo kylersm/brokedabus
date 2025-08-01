@@ -373,6 +373,7 @@ export const filterVehicles = (vehicles: TripVehicle[] | undefined, filters: Veh
     return filters.sortType === SortType.NUMBER ? sortString(a.number, b.number) :
       filters.sortType === SortType.DATE ? sortString(a.number, b.number) + a.last_message.getTime() - b.last_message.getTime() :
       filters.sortType === SortType.ROUTE ? sortRouteCodes(b.tripInfo?.routeCode ?? '', a.tripInfo?.routeCode ?? '') :
+      filters.sortType === SortType.ADHERENCE ? b.adherence - a.adherence :
       0;
   });
 }

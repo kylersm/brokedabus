@@ -80,6 +80,7 @@ export default function VehicleFilterOptions(props: {
                 <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.DATE} onChange={() => setFilters({ sortType: SortType.DATE })}/>Last message</label>
                 <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.NUMBER} onChange={() => setFilters({ sortType: SortType.NUMBER })}/>Vehicle number</label>
                 <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ROUTE} onChange={() => setFilters({ sortType: SortType.ROUTE })}/>Route</label>
+                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ADHERENCE} onChange={() => setFilters({ sortType: SortType.ADHERENCE })}/>Adherence</label>
               </div>
             </div>
           </div>
