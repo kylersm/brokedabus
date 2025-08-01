@@ -7,7 +7,6 @@ import { type SuperficialRoute } from "~/components/Route";
 import { decode } from "html-entities";
 import { TRPCError } from "@trpc/server";
 import { type ShapesWithStops, type UnifiedCalendarInfo } from "~/lib/GTFSTypes";
-import { getExpectedTripFromBC } from "~/lib/GTFSBinds";
 import { getGTFS, type GTFSFeed } from "~/utils/cache";
 
 const getShape = (feed: GTFSFeed, shapeID: string): GTFS.PolishedShape[] => {
@@ -293,14 +292,11 @@ const getDistToNearestShapeToPoint = (
          ));
 };
 
-export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | undefined, vehicle: Types.PolishedVehicle | undefined, stop: string): Partial<Types.PolishedArrivalContainer> => {
+export const toPolishedArrival = (feed: GTFSFeed, stop: string, arrival: Types.HEA_Arrival, vehicle?: Types.TripVehicle): Types.PolishedArrival => {
   // needs to be
-  if(!arrival) return { vehicle };
   const departing = isStopStartingPoint(feed, stop, arrival.trip);
   const stopInfo = getStopByCode(feed, stop);
   const tripVehicle: Types.TripVehicle | undefined = vehicle;
-  if(tripVehicle && vehicle?.block && vehicle.trip)
-    tripVehicle.tripInfo = getExpectedTripFromBC(vehicle.block, vehicle.trip, tripVehicle.adherence)
   const date = arrival.date.split('/').map(x => parseInt(x));
   const isNoon = arrival.stopTime.endsWith("PM");
   const time = arrival.stopTime.slice(0, -3).split(":").map(x => parseInt(x));
@@ -311,6 +307,7 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
     if(time[0] === 12)
       time[0] -= 12;
   }
+
   const stopTime = new Date(`${date[2]!}-${('0' + date[0]).slice(-2)}-${('0' + date[1]).slice(-2)}T${('0' + time[0]).slice(-2)}:${('0' + time[1]).slice(-2)}:00.000-10:00`);
   const arrivalTrip = getTrip(feed, arrival.trip) ?? {
     direction: 0,
@@ -323,24 +320,41 @@ export const toPolishedArrival = (feed: GTFSFeed, arrival: Types.HEA_Arrival | u
   };
 
   return {
-    vehicle: tripVehicle,
-    arrival: {
-      trip: arrivalTrip,
-      departing,
-      distance: stopInfo && tripVehicle ? 
-        getDistWithFutureTripToPoint(feed, [tripVehicle.lat, tripVehicle.lon], [stopInfo.lat, stopInfo.lon], tripVehicle.tripInfo?.shapeId, arrivalTrip.shapeId) : 0,
-      estimated: switchEstimated(parseInt(arrival.estimated)),
-      status: switchCanceled(parseInt(arrival.canceled)),
-      id: arrival.id,
-      stopTime
-    }
+    trip: arrivalTrip,
+    departing,
+    distance: stopInfo && tripVehicle ? 
+      getDistWithFutureTripToPoint(feed, [tripVehicle.lat, tripVehicle.lon], [stopInfo.lat, stopInfo.lon], tripVehicle.tripInfo?.shapeId, arrivalTrip.shapeId) : 0,
+    estimated: switchEstimated(parseInt(arrival.estimated)),
+    status: switchCanceled(parseInt(arrival.canceled)),
+    id: arrival.id,
+    stopTime
   };
 };
+
+/* const getTrip = (feed: GTFSFeed, tripId: string): GTFS.PolishedBlockTrip | undefined => {
+  const trip = feed.trips.find(t => t.trip_id === tripId);
+  if(!trip) return undefined;
+  const route = feed.routes.find(r => r.route_id === trip.route_id);
+  if(!route) return undefined;
+  return {
+      trips: [trip.trip_id],
+      shapeId: trip.shape_id,
+      displayCode: trip.display_code,
+
+      routeCode: route.route_short_name,
+      direction: parseInt(trip.direction_id) ?? -1,
+      headsign: trip.trip_headsign,
+      routeId: route.route_id,
+
+      firstArrives: 0, 
+      lastDeparts: 0
+    };
+} */
 
 export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContainer | undefined => {
   const trip = feed.trips.find(t => t.trip_id === tripId);
   if(!trip?.block_id) return undefined;
-  
+
   const blockTrips = feed.trips.filter(t => t.block_id === trip.block_id && t.service_id === trip.service_id);
 
   const routes = feed.routes.filter(r => blockTrips.map(t => t.route_id).includes(r.route_id));
@@ -355,7 +369,7 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
     const firstArrives = timeFromHNLString(tripSt.start);
     const lastDeparts = timeFromHNLString(tripSt.stop);
 
-    const current = {
+    const current: GTFS.PolishedBlockTrip = {
       trips: [trip.trip_id],
       shapeId: trip.shape_id,
       displayCode: trip.display_code,
@@ -373,6 +387,7 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
   }
 
   ranking = ranking.sort((a, b) => a.firstArrives - b.lastDeparts);
+  // check for and merge any trips that were broken up into two
   for (let i = 1; i < ranking.length; i++) {
     const previous = ranking[i - 1];
     const current = ranking[i];
@@ -624,13 +639,14 @@ export const GTFSRouter = createTRPCRouter({
       
       for(const shid of [...new Set(input.shids)]) {
         const shape = getShapeByShID(feed, shid);
-        if(!shape) continue;
-        const shapeStops = getStopsByShID(feed, shid);
-        for(const stop of shapeStops) {
-          if (!obj.stops.find(s => s._id === stop._id)?.shapes.push(shid))
-            obj.stops.push({ ...stop, shapes: [shid] });
+        if(shape) {
+          const shapeStops = getStopsByShID(feed, shid);
+          for(const stop of shapeStops) {
+            if (!obj.stops.find(s => s._id === stop._id)?.shapes.push(shid))
+              obj.stops.push({ ...stop, shapes: [shid] });
+          }
+          obj.shapes.push(shape);
         }
-        obj.shapes.push(shape);
       }
       
       if(obj.shapes.length === 1)
@@ -777,6 +793,20 @@ export const GTFSRouter = createTRPCRouter({
       }
     
       return numbers;
+    }),
+  getTripInfos: publicProcedure
+    .input(z.array(z.string()))
+    .query(async ({ input }): Promise<Record<string, GTFS.PolishedBlockTrip>> => {
+      const feed = await getGTFS();
+      const trips = [...new Set(input)];
+      const obj: Record<string, GTFS.PolishedBlockTrip> = {};
+      for(const t of trips) {
+        const trip = getTrip(feed, t);
+        if(!trip) continue;
+        obj[t] = { ...trip, firstArrives: 0, lastDeparts: 48 * 60 * 60 };
+      }
+      // return trips.map(t => getTrip(feed, t)).filter((t): t is Types.IdentifiableTrip => t !== undefined);
+      return obj;
     }),
   getCalendarInfo: publicProcedure
     .input(z.object({ stopId: z.string(), date: z.date() }))

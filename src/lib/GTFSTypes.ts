@@ -194,6 +194,7 @@ export interface BlockContainer {
 export interface PolishedBlockTrip extends Types.IdentifiableTrip {
   firstArrives: number;
   lastDeparts: number;
+  active?: boolean;
 }
 export interface UnifiedCalendarInfo {
   trips: Types.IdentifiableTrip[];

@@ -7,6 +7,8 @@ import type * as GTFS from "~/lib/GTFSTypes";
 import { BUSAPI } from "~/server/api/routers/hea";
 import { getBlockInfo, YYYYMMDDToTime } from "~/server/api/routers/gtfs";
 import { env } from "~/env";
+import { HST_UTC_OFFSET } from "~/lib/util";
+import { day } from "~/lib/GTFSBinds";
 
 interface Vehicle {
   number: string;
@@ -70,6 +72,32 @@ const getHSTDateFromVehicleMSG = (lastMsg: string) => {
   }
 }
 
+const setExpectedTrip = (trips: GTFS.PolishedBlockTrip[], adherence: number): void => {
+  trips.forEach(t => t.active = false);
+  const time = (Math.floor(Date.now() / 1000) - HST_UTC_OFFSET) % day + (adherence * 60);
+  const timePlusDay = time + day;
+  const containingTrip = trips.find(t => (t.firstArrives <= time && time <= t.lastDeparts) ||
+    (t.firstArrives <= timePlusDay && timePlusDay <= t.lastDeparts));
+  if (containingTrip)
+    containingTrip.active = true;
+  else {
+    let timeToUse = time;
+    const firstTrip = trips[0];
+
+    // if the time 50 minutes ago is still earlier than the first trip, we are currently past a day for the block
+    if((time + 50 * 60) < (firstTrip?.firstArrives ?? 0)) {
+      timeToUse = timePlusDay;
+    }
+
+    const a = trips.reduce((p, c) => {
+      const pTime = (timeToUse) - p.firstArrives;
+      const cTime = (timeToUse) - c.firstArrives;
+      return cTime > 0 && cTime < pTime ? c : p;
+    });
+    a.active = true;
+  }
+}
+
 /**
  * A "turnstile" way of a relatively intense task.
  * 
@@ -90,6 +118,7 @@ export async function fetchVehicles() {
   const now = Date.now();
   if (lastFetchedVehicles < 0 || now - lastFetchedVehicles > 7.5 * 1000) {
     const xml = (await axios.get(`${BUSAPI}vehicle/?key=${env.HEA_KEY}`)).data as string;
+
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
       // select one with higher index
@@ -101,7 +130,7 @@ export async function fetchVehicles() {
 
     newVehicles.forEach(nv => {
       const v = vehicles[nv.number];
-      const block = !v?.trip || GTFS_FEED.agency.length === 0 ? undefined :
+      const block = !nv?.trip || GTFS_FEED.agency.length === 0 ? undefined :
       // determine if the current trip ID belongs to the cached block, then continue using the cached block
        v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : 
       // otherwise get a new block from the new trip ID, or undefined if there is no trip
@@ -110,6 +139,10 @@ export async function fetchVehicles() {
         (!v || isNaN(v.adherence) || lastFetchedVehicles < 0) ? nv.adherence 
         // otherwise, set it to the avg of the two
         : ((v.adherence + nv.adherence) / 2);
+
+      if(block)
+        setExpectedTrip(block?.trips, adherence);
+
       vehicles[nv.number] = {
         ...nv, 
         block,
