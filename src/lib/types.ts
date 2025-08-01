@@ -53,9 +53,14 @@ export interface PolishedArrival {
   status: Canceled;
 }
 
+export interface PolishedArrivalsContainer {
+  vehicle?: PostRqVehicle;
+  arrivals: PolishedArrival[];
+}
+
 export interface PolishedArrivalContainer {
-  vehicle?: TripVehicle;
-  arrival: PolishedArrival
+  vehicle?: PostRqVehicle;
+  arrival?: PolishedArrival;
 }
 
 export interface Stop {

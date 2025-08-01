@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type TripStopAIO, type PolishedArrivalContainer } from "~/lib/types";
+import { type TripStopAIO, PolishedArrivalContainer } from "~/lib/types";
 import { HSTify } from "~/lib/util";
 import { api } from "~/utils/api";
 import { useMap, refetchInterval, DirectionKey, LastUpdated } from "../mapIntermediate";
@@ -69,13 +69,15 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
     header={<>
       {arrivalCache?.vehicle ? <>Monitoring Bus {arrivalCache.vehicle.number} for Stop {stop.info.code}</> : 'No GPS to follow'}
       {arrivalCache?.arrival && `, ${arrivalCache.arrival.departing ? "depart" : "arriv"}ing at ${HSTify(arrivalCache.arrival.stopTime, true)}`}
-      <DirectionKey />
+      {arrivalCache?.arrival?.status === "Canceled" ? <div className="text-red-500 font-bold">ARRIVAL CANCELED</div> : 
+      arrivalCache?.arrival?.status === "Uncanceled" ? <div className="text-green-500 font-bold">TRIP IS UNCANCELED</div> : 
+      <DirectionKey/>}
       <LastUpdated />
     </>}
     // without arrivalCache, vehicle wouldnt exist
     vehicles={arrivalCache?.vehicle ? [{
       ...arrivalCache.vehicle,
-      arrivalInfo: arrivalCache.arrival,
+      arrivalInfo: arrivalCache.arrival ? [arrivalCache.arrival] : undefined,
     }] : []}
     center={[stop.info.lat, stop.info.lon]}
     zoom={15}
@@ -87,6 +89,7 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
     }]}
     routePath={shape && arrivalCache ? [{
       direction: shape.direction === 1 ? 'East' : 'West',
+      unfocused: arrivalCache?.arrival?.status === "Canceled",
       routePath: shape
     }] : []} />;
 }

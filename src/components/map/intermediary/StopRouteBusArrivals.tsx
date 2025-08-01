@@ -4,7 +4,7 @@ import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, DirectionKey, LastUpdated, refetchInterval } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
-import type { PolishedArrivalContainer, TripStopAIO } from "~/lib/types";
+import type { PolishedArrivalsContainer, TripStopAIO } from "~/lib/types";
 import { sortString } from "~/lib/util";
 import { useSearchParams } from "next/navigation";
 
@@ -29,7 +29,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
 
   const fullOpenVehicles = arrivals?.filter(a => a.vehicle && openVehicles.includes(a.vehicle.number)) ?? [];
-  const arrivalShapes = fullOpenVehicles.map(a => a.arrival.trip.shapeId);
+  const arrivalShapes = fullOpenVehicles.flatMap(a => a.arrivals.map(a => a.trip.shapeId));
   const currentShapes = fullOpenVehicles.map(a => a.vehicle?.tripInfo?.shapeId).filter(s => typeof s === "string");
 
   const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ 
@@ -63,7 +63,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
     }
   }, [map, zoomed, arrivals, stop]);
 
-  const arrivalsWithFilters = arrivals?.filter((a): a is Required<PolishedArrivalContainer> => !!a.vehicle && (!routeFilter || a.arrival?.trip.routeCode === routeFilter));
+  const arrivalsWithFilters = arrivals?.filter((a): a is Required<PolishedArrivalsContainer> => !!a.vehicle && (!routeFilter || a.arrivals.some(a => a.trip.routeCode === routeFilter)));
 
   return <Map
     refHook={setMap}
@@ -90,7 +90,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
       arrivalsWithFilters
         .map(a => ({ 
           ...a.vehicle,
-          arrivalInfo: a.arrival
+          arrivalInfo: a.arrivals
         }))
       : []}
     vehicleHook={setOpenVehicles}

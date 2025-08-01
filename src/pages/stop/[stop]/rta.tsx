@@ -12,7 +12,7 @@ import ListItem from '~/components/ListItem';
 import StopTitle from '~/components/StopTitle';
 import RouteChip from '~/components/Route';
 import ListTrips from '~/components/ListTrips';
-import { type PolishedArrivalContainer, type PolishedStop } from '~/lib/types';
+import { type PolishedArrival, type TripVehicle, type PolishedStop } from '~/lib/types';
 import NotFound from '~/components/NotFound';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
@@ -97,8 +97,9 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
 
       {arrivals ? arrivals.length ? <GenericTable>
         {arrivals
-          .filter(a => !routeFilter || a.arrival?.trip.routeCode === routeFilter)
-          .map(a => <RTAEntry key={a.arrival?.id} arrival={a} stop={routesServed.info} now={now}/>)
+          .flatMap(a => a.arrivals.map(ar => ({ arrival: ar, vehicle: a.vehicle })))
+          .filter(a => !routeFilter || a.arrival.trip.routeCode === routeFilter)
+          .map(a => <RTAEntry key={a.arrival.id} arrival={a.arrival} vehicle={a.vehicle} stop={routesServed.info} now={now}/>)
         }
       </GenericTable> : 
       'No arrivals listed' :
@@ -110,11 +111,8 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
 
 const MetersToMiles = 1 / 1609.344;
 
-const RTAEntry = (props: { arrival: PolishedArrivalContainer, stop: PolishedStop, now: number }) => {
-  const { arrival: arrivalContainer, stop, now } = props;
-
-  if(!arrivalContainer.arrival) return <></>;
-  const { arrival, vehicle } = arrivalContainer;
+const RTAEntry = (props: { arrival: PolishedArrival, vehicle?: TripVehicle, stop: PolishedStop, now: number }) => {
+  const { arrival, vehicle, stop, now } = props;
 
   const arrivalLessThanHour = (arrival.stopTime.getTime() - now) < 60 * 60 * 1000;
   const isAtStop = arrival.distance ? (arrival.distance * MetersToMiles) < 0.5 : false;

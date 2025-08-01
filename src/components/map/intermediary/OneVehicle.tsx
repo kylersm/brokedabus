@@ -1,11 +1,10 @@
 import type { Map } from "leaflet";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, DirectionKey, LastUpdated, StopArrival } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
-import { getHSTTime } from "~/lib/util";
-import { getExpectedTripFromBC } from "~/lib/GTFSBinds";
+import { createPostRqVehicle, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 import HeadTitle from "../../HeadTitle";
 import NotFound from "../../NotFound";
 
@@ -28,28 +27,25 @@ export function OneVehicle(props: { vehicle: string; }) {
       if (r.state.error)
         return false;
       else return 10000;
-    }
+    },
+    select: createPostRqVehicle
   });
 
-  const tripInfo = vehicleInfo ? getExpectedTripFromBC(vehicleInfo.block, vehicleInfo.trip, vehicleInfo.adherence) : undefined;
-  const { data: stops } = api.gtfs.getStopsByTripID.useQuery({ tripId: tripInfo?.trips ?? [] }, {
-    enabled: !!tripInfo?.trips.length
+  const { data: stops } = api.gtfs.getStopsByTripID.useQuery({ tripId: vehicleInfo?.tripInfo?.trips ?? [] }, {
+    enabled: !!vehicleInfo?.tripInfo?.trips.length
   });
-  const { data: shapes } = api.gtfs.getShapeByShID.useQuery({ shid: tripInfo?.shapeId ?? "" }, {
-    enabled: !!tripInfo
+  const { data: shapes } = api.gtfs.getShapeByShID.useQuery({ shid: vehicleInfo?.tripInfo?.shapeId ?? "" }, {
+    enabled: !!vehicleInfo?.tripInfo
   });
 
-  const getNow = () => (getHSTTime() + (vehicleInfo ? 60 * vehicleInfo.adherence : 0)) % (24 * 60 * 60);
-
-  const now = useRef<number>(getNow());
+  const [now, setNow] = useState<number>(getVehicleNow(vehicleInfo));
   const [map, setMap] = useState<Map>();
   const [framed, setFramed] = useState<boolean>();
 
-  const difference = stops?.some(s => (s.trip.arrives - now.current) >= 18 * 60 * 60) ? 24 * 60 * 60 : 0;
   useEffect(() => {
-    const interval = setInterval(() => now.current = getNow(), 1000);
+    const interval = setInterval(() => setNow(getVehicleNow(vehicleInfo)), 1000);
     return () => clearInterval(interval);
-  }, [vehicleInfo, getNow]);
+  }, [vehicleInfo]);
 
   useEffect(() => {
     if (map && vehicleInfo && !framed) {
@@ -68,8 +64,8 @@ export function OneVehicle(props: { vehicle: string; }) {
     <Map
       refHook={setMap}
       header={<>
-        Monitoring Bus {vehicle} {tripInfo ? <>
-          on Route <RouteChip route={{ code: tripInfo.routeCode, id: tripInfo.routeId }} inline /> {tripInfo.headsign}
+        Monitoring Bus {vehicle} {vehicleInfo?.tripInfo ? <>
+          on Route <RouteChip route={{ code: vehicleInfo.tripInfo.routeCode, id: vehicleInfo.tripInfo.routeId }} inline /> {vehicleInfo.tripInfo.headsign}
         </> : ' with no active trip'}
         <DirectionKey />
         <LastUpdated />
@@ -81,12 +77,12 @@ export function OneVehicle(props: { vehicle: string; }) {
       stops={stops ? stops.map((s) => ({
         location: [s.stop.lat, s.stop.lon],
         stop: s.stop.code,
-        stale: s.trip.arrives - now.current - difference < 0,
+        stale: s.trip.arrives - now < 0,
         popup: <StopPopup stop={s.stop}>
-          <StopArrival key={s.stop._id + s.trip._id} arrives={s.trip.arrives - now.current - difference} oneVehicle/>
+          <StopArrival key={s.stop._id + s.trip._id} arrives={s.trip.arrives - now} oneVehicle/>
         </StopPopup>
       })) : []}
-      vehicles={vehicleInfo ? [{ ...vehicleInfo, tripInfo }] : []} 
+      vehicles={vehicleInfo ? [{ ...vehicleInfo, nextStop: getExpectedStop(stops, vehicleInfo.tripInfo, now) }] : []} 
     />
   </>;
 }

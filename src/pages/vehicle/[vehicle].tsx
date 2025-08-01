@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import ListItem from '~/components/ListItem';
 import NotFound from '~/components/NotFound';
 import Button from '~/components/Button';
-import { getExpectedTripFromBC } from '~/lib/GTFSBinds';
+import { getExpectedTrip } from '~/lib/GTFSBinds';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import GenericTable from '~/components/GenericTable';
@@ -30,7 +30,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       else return 10000;
     }
   });
-  const tripInfo = vehicleInfo ? getExpectedTripFromBC(vehicleInfo.block, vehicleInfo.trip, vehicleInfo.adherence) : undefined;
+  const tripInfo = getExpectedTrip(vehicleInfo?.block);
   const { data: stops } = api.gtfs.getStopsByTripID.useQuery({ tripId: tripInfo?.trips ?? [] }, {
     enabled: !!tripInfo?.trips.length
   })

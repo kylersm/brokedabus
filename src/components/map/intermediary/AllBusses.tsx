@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import { useMap, StopArrival } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
@@ -6,8 +6,7 @@ import { ActiveType, SortType, type VehicleFiltering } from "../../Vehicles";
 import { filterVehicles } from "~/lib/BusTypes";
 import { getHSTTime } from "~/lib/util";
 import VehicleFilterOptions from "../../VehicleFilterOptions";
-import type { PostRqVehicle } from "~/lib/types";
-import { getExpectedTripFromBC } from "~/lib/GTFSBinds";
+import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 
 /**
  * Shows a map of every bus. Accessed using /vehicles/map
@@ -24,16 +23,13 @@ import { getExpectedTripFromBC } from "~/lib/GTFSBinds";
 export function AllBusses() {
   const Map = useMap();
 
-  const { data: heaVehicles } = api.hea.getVehicles.useQuery({ }, {
-    refetchInterval: 10 * 1000
+  const { data: vehicles } = api.hea.getVehicles.useQuery({ }, {
+    refetchInterval: 10 * 1000,
     // refetch every 10 seconds
+    select: createPostRqVehicles
   });
 
-  const [vehicleOfInterest, setVOI] = useState<string[]>([]);
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
-  const vehicles: PostRqVehicle[] | undefined = heaVehicles?.map(v => ({
-    ...v, tripInfo: vehicleOfInterest.includes(v.number) ? getExpectedTripFromBC(v.block, v.trip, v.adherence) : v.block?.trips.find(t => t.trips.includes(v.trip ?? ''))
-  }));
 
   const trips = vehicles?.filter(v => openVehicles.includes(v.number)).map(v => v.tripInfo?.trips ?? []).flat(1);
   const { data: allShapes } = api.gtfs.getShapesByTripIDs.useQuery({ tripIds: trips ?? [] }, {
@@ -58,15 +54,11 @@ export function AllBusses() {
   const numbers = filteredVehicles?.map(v => v.number) ?? [];
   const [showFilter, setSF] = useState<boolean>(false);
 
-  const now = useRef<number>(getHSTTime());
+  const [now, setNow] = useState<number>(getHSTTime());
   useEffect(() => {
-    const interval = setInterval(() => now.current = getHSTTime(), 1000);
+    const interval = setInterval(() => setNow(getHSTTime()), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    setVOI(current => current.concat(openVehicles.filter(v => !current.includes(v))));
-  }, [openVehicles]);
 
   return <>
     <VehicleFilterOptions
@@ -77,7 +69,11 @@ export function AllBusses() {
     />
     <Map
       header={<>
-        Showing all busses active in the last 24 hours
+        Showing all busses active {
+          filters.lastMessage === ActiveType.ALL ? "whenever" : 
+          filters.lastMessage === ActiveType.MONTH ? "in the last 30 days" :
+          filters.lastMessage === ActiveType.WEEK ? "in the past week" : "in the past 24 hours"
+        }
         <div onClick={() => setSF(true)} className="underline text-emerald-500 font-normal cursor-pointer w-fit mx-auto">
           Click to see filter options
         </div>
@@ -87,7 +83,12 @@ export function AllBusses() {
         routePath: s,
       }))}
 
-      vehicles={filteredVehicles}
+      vehicles={filteredVehicles?.map(v => {
+        const info = v.tripInfo?.trips;
+        return { ...v, nextStop: getExpectedStop(
+          allStops?.filter(s => s.trips.some(t => info?.includes(t._id))).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
+        };
+      })}
       vehicleHook={setOpenVehicles}
       wipeBus={(v) => !numbers.includes(v.number)}
       stops={allStops?.map(s => ({
@@ -101,7 +102,7 @@ export function AllBusses() {
             return <StopArrival
               key={s.stop._id + t._id}
               vehicle={vehicle?.number}
-              arrives={t.arrives - now.current - 60 * (vehicle?.adherence ?? 0)}/>;
+              arrives={t.arrives - getVehicleNow(vehicle, now)}/>;
           })}
         </StopPopup>
       }))}
