@@ -15,35 +15,35 @@ export default function Search() {
         emoji={'🚏'}
       >
         <b>Enter the stop number</b><br/>
-        You must know the exact stop number.
+        You must know the exact stop number
       </ListItem>
       <ListItem
         href={"/search/street"}
         emoji={'🛣️'}
       >
         <b>Search by street name</b><br/>
-        Great if you {"can't"} find an exact stop number.
+        See stops on a specific street
       </ListItem>
       <ListItem
         href={"/search/route"}
         emoji={'🚍'}
       >
         <b>Enter a route</b><br/>
-        You should know the short name
+        See trips served by a route
       </ListItem>
       <ListItem
         href={"/search/headsign"}
         emoji={'🏞️'}
       >
         <b>Search by headsign</b><br/>
-        You should know the destination of the route
+        Search trips using a destination
       </ListItem>
       <ListItem
         href={"/search/tap"}
         emoji={'🗺️'}
       >
         <b>Tap to find stops</b><br/>
-        Use a visual map and tap!
+        Use and tap a map to find stops in a radius
       </ListItem>
       <ListItem
         href={"/routes"}
