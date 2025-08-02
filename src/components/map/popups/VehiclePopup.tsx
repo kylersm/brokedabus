@@ -54,12 +54,10 @@ export default function VehiclePopup(props: {
   // complicated line of code to handle grammar with counting minutes and whether the bus is behind/ahead of/on
   // if vehicle wasnt given we'll just say where it's going
   // refer to https://hea.thebus.org/api/documentation/vehicleJSON.pdf on how adherence works
-  const schedule = vehicle ? 
-                                 // about 1 second
+  const schedule = // about 1 second
     (Math.abs(vehicle.adherence) <= 0.02 ? "On" : 
       quantifyTime(Math.abs(vehicle.adherence * 60)) + ' ' +
-    (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule" : `Headed X`;
-    // ${arrival?.trip.direction ? "Eastbound" : "Westbound"}
+    (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule";
 
   const now = getHSTTime();
   const tripNow = now + vehicle.adherence * 60;
@@ -110,7 +108,7 @@ export default function VehiclePopup(props: {
       </>
     }</>}
     <hr className="my-2"/>
-    <div className="flex gap-x-4 w-fit mx-auto">
+    <div className="flex gap-x-2 w-fit mx-auto">
       {vehicle.tripInfo?.trips ? <span>Trip {vehicle.tripInfo.trips.join(', ')}</span> : ''}
       {vehicle.block ? <span>Block {vehicle.block.name.split('-')[1]}</span> : ''}
       {vehicle.driver ? <span>Driver {vehicle.driver}</span> : <i>Unknown driver</i>}
