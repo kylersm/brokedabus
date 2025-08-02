@@ -105,8 +105,8 @@ export default function VehiclePopup(props: {
         tripNow+nextDelta > blocks.end ? <>, 
           Ended last trip; heading back to bus facility
         </> : <>
-        {vehicle.nextStop ? <div><b>NEXT STOP:</b> {vehicle.nextStop.stop.code} - {vehicle.nextStop.stop.name}</div> : null}
         {!blocks.next ? <>, Last trip for bus.</> : null}
+        {vehicle.nextStop ? <div><b>NEXT STOP:</b> {vehicle.nextStop.stop.code} - {vehicle.nextStop.stop.name}</div> : null}
       </>
     }</>}
     <hr className="my-2"/>
