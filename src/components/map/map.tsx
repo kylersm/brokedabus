@@ -10,7 +10,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { type JSX, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction, useContext } from "react";
 import type { PolishedArrival, PostRqVehicle } from "~/lib/types";
 import type { PolishedShapeContainer, StopTrip } from "~/lib/GTFSTypes";
 import { brightenColor, getColorFromRoute, getContrastFromRoute } from "~/lib/BusTypes";

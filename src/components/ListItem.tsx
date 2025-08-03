@@ -1,6 +1,6 @@
 import type { Url } from "next/dist/shared/lib/router/router";
 import Link from "next/link";
-import type { PropsWithChildren } from "react";
+import { type JSX, type PropsWithChildren } from "react";
 
 interface BaseProp {
   href?: Url;           // arrow will appear if this exists.

@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import HeadTitle from "~/components/HeadTitle";
 import RouteChip from "~/components/Route";
 import PadPage from "~/components/templates/PadPage";
