@@ -38,32 +38,32 @@ export default function Home() {
           <ul className="list-disc ml-5">
             <li>
               To know how to go from A to B
-              <p className="ml-2">See <a className="text-blue-500 underline" href="https://transitapp.com/">Transit App</a> or your Maps app</p>
+              <p className="ml-2">See <a className="link" href="https://transitapp.com/">Transit App</a> or your Maps app</p>
             </li>
             <li>
               To see service disruptions & detours
-              <p className="ml-2">Visit <a className="text-blue-500 underline" href="https://thebus.org/">TheBus</a> website</p>
+              <p className="ml-2">Visit <a className="link" href="https://thebus.org/">TheBus</a> website</p>
             </li>
             <li>
               To suggest new features for BrokeDaBus
-              <p className="ml-2">Request at <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus/issues">BrokeDaBus</a> code repository</p>
+              <p className="ml-2">Request at <a className="link" href="https://github.com/shringo/brokedabus/issues">BrokeDaBus</a> code repository</p>
             </li>
           </ul><br/>
 
           <b>Developer & Source Code</b><br/>
-          <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
+          <a className="link" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
           <i>Not affiliated with Oahu Transit Services</i><br/><br/>
 
           <b>Inspired By</b><br/>
-          <a className="text-blue-500 underline" href="https://pantographapp.com">Pantograph App</a><br/>
-          <a className="text-blue-500 underline" href="https://hea.thebus.org/">TheBusHEA</a><br/><br/>
+          <a className="link" href="https://pantographapp.com">Pantograph App</a><br/>
+          <a className="link" href="https://hea.thebus.org/">TheBusHEA</a><br/><br/>
 
           <b>Tools Used</b><br/>
           <ul className="list-disc ml-5">
-            <li><a className="text-blue-500 underline" href="https://hea.thebus.org/api_info.asp">TheBus ‘HEA API</a></li>
-            <li><a className="text-blue-500 underline" href="https://leafletjs.com/">Leaflet</a></li>
-            <li><a className="text-blue-500 underline" href="https://tailwindcss.com/">TailwindCSS (Styling)</a></li>
-            <li><a className="text-blue-500 underline" href="https://create.t3.gg/">T3 stack</a></li>
+            <li><a className="link" href="https://hea.thebus.org/api_info.asp">TheBus ‘HEA API</a></li>
+            <li><a className="link" href="https://leafletjs.com/">Leaflet</a></li>
+            <li><a className="link" href="https://tailwindcss.com/">TailwindCSS (Styling)</a></li>
+            <li><a className="link" href="https://create.t3.gg/">T3 stack</a></li>
           </ul><br/>
         </span>
       </div>

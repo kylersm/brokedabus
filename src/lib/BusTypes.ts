@@ -93,15 +93,15 @@ export const getColorFromRoute = (route: SuperficialRoute): string => {
 
 export const getContrastFromRoute = (route: SuperficialRoute): string => {
   if(route.id === "181" || route.code.toLowerCase() === "skyline")
-    return "#ffffff";
+    return "#fff";
   else if(routeTrafficTypes.urban.includes(route.code))
-    return "#000000";
+    return "#000";
   else if(routeTrafficTypes.suburban.includes(route.code))
-    return "#ffffff"
+    return "#fff"
   else if(routeTrafficTypes.local.includes(route.code))
-    return "#000000";
+    return "#000";
   else
-    return "#000000";
+    return "#000";
 }
 
 // Decomissioned vehicles aren't listed
@@ -151,8 +151,8 @@ export enum Manufacturer {
 
 export enum FuelType {
   Diesel="Diesel",
-  Electric="Electric",
-  Hybrid="Hybrid"
+  Hybrid="Hybrid",
+  Electric="Electric"
 };
 
 export const VehicleInfo = {

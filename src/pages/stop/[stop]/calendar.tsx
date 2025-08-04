@@ -54,7 +54,7 @@ const Calendar: NextPage<{stop:string}> = ({ stop }) => {
 
   return (<PadPage center>
     <HeadTitle>{`Stop ${stop} Calendar: ${routesServed.info.name}`}</HeadTitle>
-    <div className='sticky w-full top-0 pt-3 bg-white -mt-4'>
+    <div className='sticky w-full top-0 pt-3 bg-[var(--background)] -mt-4'>
       <StopTitle stop={routesServed.info}/>
       {favoriteInfo?.name !== undefined && <div className='text-orange-500 font-bold text-xl'>{favoriteInfo.name}</div>}
       <hr className='mt-2'/>

@@ -68,7 +68,7 @@ export default function VehiclePopup(props: {
   </div> : null;
   return <>
     {!vehiclePage && <>
-      <div className="text-center font-bold text-lg"><Link className="text-blue-500 underline" href={{
+      <div className="text-center font-bold text-lg"><Link className="link" href={{
         pathname: "/vehicle/[vehicle]",
         query: { vehicle: vehicle.number }
       }}>Bus {vehicle.number}</Link> {info && <span className="font-normal italic text-sm">{busInfoToShortString(info)}</span>}</div>

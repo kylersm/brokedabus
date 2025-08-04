@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import type { PropsWithChildren } from "react";
+import { useContext, type PropsWithChildren } from "react";
+import ThemeContext from "~/context/ThemeContext";
+import { Theme } from "~/lib/prefs";
 
 /**
  * The 'Not Found' page. Can also be used for client HTTP/S errors
@@ -11,14 +13,15 @@ import type { PropsWithChildren } from "react";
 export default function NotFound(props: {
   errorMessage: string;
 } & PropsWithChildren) {
+  const theme = useContext(ThemeContext)?.[0];
   const router = useRouter();
 
   return <div className='w-full h-full flex'>
     <div className='m-auto text-center'>
-      <Image className="mx-auto" width={200} height={200} src={"/bus404.png"} alt="A cartoonish bus drawn with a confused expression on it's face with its front wheels holding a paper"/>
+      <Image className="mx-auto" width={200} height={200} src={`/${theme === Theme.DARK ? 'd_' : ''}bus404.png`} alt="A cartoonish bus drawn with a confused expression on it's face with its front wheels holding a paper"/>
       <p className='text-4xl font-bold m-2'>{props.errorMessage}</p>
       {props.children}<br/>
-      <p onClick={() => router.back()} className='mt-4 mx-auto w-fit cursor-pointer text-blue-500 underline'>{"<< Go Back"}</p>
+      <p onClick={() => router.back()} className='mt-4 mx-auto w-fit link'>{"<< Go Back"}</p>
     </div>
   </div>;
 }

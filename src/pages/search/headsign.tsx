@@ -27,8 +27,8 @@ export default function Headsign() {
           e.preventDefault();
           setHeadsign((e.currentTarget.headsign as HTMLInputElement).value);
         }}>
-          <input name="headsign" className="border-2 rounded-xl px-3 mr-3" type="text" placeholder="Enter headsign..."/>
-          <input className="border-2 rounded-xl px-2 bg-blue-500 text-white active:bg-blue-600" type="submit" value="Enter"/>
+          <input name="headsign" type="text" placeholder="Enter headsign..."/>
+          <input className="submit-btn" type="submit" value="Enter"/>
         </form>
       </div><br/>
 

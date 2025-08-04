@@ -39,7 +39,7 @@ export default function ListTrips(props: {
       deduplicatedRoutes.map((r, i) => <div className="inline text-base" key={props.key + r.headsign + r.routeId}>{i > 0 ? ' ' : ''}
         <RouteChip route={{ code: r.routeCode, id: r.routeId }} inline/>
       </div>) :
-      <GenericTable noSmallSeparators noGap>
+      <GenericTable noSmallSeparators noGap noCenter>
         {props.trips.filter((t, i, a) => a.findIndex(t2 => t2.displayCode === t.displayCode) === i).sort((a, b) => sortRouteCodes(a.routeCode, b.routeCode)).map(t => <ListItem
           key={t.routeId+t.headsign}
           emoji={<RouteChip route={{ code: t.routeCode, id: t.routeId}}/>}

@@ -20,10 +20,13 @@ export default function StopPopup(props: PropsWithChildren & { stop: PolishedSto
   const [expand, setExpand] = useState<boolean>(false);
 
   return <>
-    <div className="text-center font-bold text-lg"><Link href={{
-      pathname: "/stop/[stop]",
-      query: { stop: stop.code }
-    }}>Stop {stop.code} - {stop.name}</Link></div>
+    <div className="text-center font-bold text-lg"><Link 
+      className="text-blue-300"
+      href={{
+        pathname: "/stop/[stop]",
+        query: { stop: stop.code }
+      }}>Stop {stop.code} - {stop.name}</Link>
+    </div>
 
     {trips && <>
       {(trips.length > 0 && trips.length < 5) || expand ? <ListTrips

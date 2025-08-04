@@ -5,6 +5,11 @@ import { BusInfos, FuelType, HeadsignColor, Manufacturer, routeTrafficTypes, typ
 import { sortRouteCodes } from "~/lib/util";
 import RouteChip from "./Route";
 import { api } from "~/utils/api";
+import RemoveUnderline from "./RemoveUnderline";
+
+const SelectClass = "block md:flex gap-x-6 space-y-2 sm:space-y-0 whitespace-nowrap text-left flex-wrap pb-3";
+export const ExpandArrowClass = "inline-flex font-normal text-neutral-500 dark:text-neutral-400";
+export const ContainerClass = "bg-gray-50 dark:bg-[#333] shadow-inner shadow-neutral-400 dark:shadow-black text-left p-3 px-4 rounded-md mt-3 mb-7 gap-y-2";
 
 /**
  * Shows vehicle filtering options for the /vehicles/map and /vehicles page.
@@ -53,8 +58,8 @@ export default function VehicleFilterOptions(props: {
   const headsignColorKeys = Object.keys(HeadsignColor) as (keyof typeof HeadsignColor)[];
 
   return <>
-    <div className={`${showFilter ? 'block opacity-25' : 'hidden opacity-0'} transition delay-150 duration-300 absolute w-full h-full bg-black z-[45]`} onClick={() => setSF(false)}/>
-    <div className={`${showFilter ? 'block opacity-100' : 'hidden opacity-0'} transition delay-150 duration-300 ease-in-out absolute w-[calc(100%-2*3.5rem)] h-[calc(100%-3rem-2*3.5rem)] z-[46] m-14 py-3 pb-10 px-5 md:px-12 bg-white shadow-2xl shadow-gray-500 rounded-lg overflow-y-scroll`}>
+    <div className={`${showFilter ? 'block opacity-25' : 'hidden opacity-0'} transition delay-150 duration-300 absolute w-full h-full bg-black dark:bg-white z-[45]`} onClick={() => setSF(false)}/>
+    <div className={`${showFilter ? 'block opacity-100' : 'hidden opacity-0'} transition delay-150 duration-300 ease-in-out absolute w-[calc(100%-2*3.5rem)] h-[calc(100%-3rem-2*3.5rem)] z-[46] m-14 py-3 pb-10 px-5 md:px-12 bg-[var(--background)] shadow-2xl shadow-gray-500 rounded-lg overflow-y-scroll [&_input[type=radio]]:mr-1`}>
       <div className="mx-auto w-full text-center overflow-hidden">
         <div className="absolute top-2 right-3 cursor-pointer text-red-500 font-bold" onClick={() => setSF(false)}>X</div>
         <div className="font-bold text-2xl">
@@ -64,26 +69,27 @@ export default function VehicleFilterOptions(props: {
         <div className="mx-auto w-fit space-y-3">
           <div className="flex md:block md:space-y-3">
             <div className="w-full md:flex block items-center">
-              <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Last Message:</p>
-              <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap md:justify-center">
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.DAY} onChange={() => setFilters({ lastMessage: ActiveType.DAY})}/>Last 24 hours</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.WEEK} onChange={() => setFilters({ lastMessage: ActiveType.WEEK})}/>Last 7 days</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.MONTH} onChange={() => setFilters({ lastMessage: ActiveType.MONTH})}/>Last 30 days</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="lastmessage" checked={filters.lastMessage === ActiveType.ALL} onChange={() => setFilters({ lastMessage: ActiveType.ALL})}/>Anytime</label>
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7 whitespace-nowrap">Last Message:</p>
+              <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap">
+                <label className="whitespace-nowrap"><input type="radio" name="lastmessage" checked={filters.lastMessage === ActiveType.DAY} onChange={() => setFilters({ lastMessage: ActiveType.DAY})}/>Last 24 hours</label>
+                <label className="whitespace-nowrap"><input type="radio" name="lastmessage" checked={filters.lastMessage === ActiveType.WEEK} onChange={() => setFilters({ lastMessage: ActiveType.WEEK})}/>Last 7 days</label>
+                <label className="whitespace-nowrap"><input type="radio" name="lastmessage" checked={filters.lastMessage === ActiveType.MONTH} onChange={() => setFilters({ lastMessage: ActiveType.MONTH})}/>Last 30 days</label>
+                <label className="whitespace-nowrap"><input type="radio" name="lastmessage" checked={filters.lastMessage === ActiveType.ALL} onChange={() => setFilters({ lastMessage: ActiveType.ALL})}/>Anytime</label>
               </div>
             </div>
             <div className="w-full md:flex block items-center">
               <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Sort:</p>
-              <div className="!ml-0 md:ml-0 md:space-x-6 flex flex-wrap md:justify-center">
+              <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap">
                 <label className="md:block"><span className="hidden md:inline">Ascending? </span><input type="checkbox" className="md:ml-1" checked={filters.ascendSort} onChange={() => setFilters({ ascendSort: !filters.ascendSort })}/><span className="inline md:hidden"> Ascending?</span></label>
                 <div className="basis-full h-0 md:hidden"/>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.DATE} onChange={() => setFilters({ sortType: SortType.DATE })}/>Last message</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.NUMBER} onChange={() => setFilters({ sortType: SortType.NUMBER })}/>Vehicle number</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ROUTE} onChange={() => setFilters({ sortType: SortType.ROUTE })}/>Route</label>
-                <label className="whitespace-nowrap"><input type="radio" className="mr-1" name="sort" checked={filters.sortType === SortType.ADHERENCE} onChange={() => setFilters({ sortType: SortType.ADHERENCE })}/>Adherence</label>
+                <label className="whitespace-nowrap"><input type="radio" name="sort" checked={filters.sortType === SortType.DATE} onChange={() => setFilters({ sortType: SortType.DATE })}/>Last message</label>
+                <label className="whitespace-nowrap"><input type="radio" name="sort" checked={filters.sortType === SortType.NUMBER} onChange={() => setFilters({ sortType: SortType.NUMBER })}/>Vehicle number</label>
+                <label className="whitespace-nowrap"><input type="radio" name="sort" checked={filters.sortType === SortType.ROUTE} onChange={() => setFilters({ sortType: SortType.ROUTE })}/>Route</label>
+                <label className="whitespace-nowrap"><input type="radio" name="sort" checked={filters.sortType === SortType.ADHERENCE} onChange={() => setFilters({ sortType: SortType.ADHERENCE })}/>Adherence</label>
               </div>
             </div>
           </div>
+
           <div className="w-full md:flex block items-center">
             <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Activity:</p>
             <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap justify-center">
@@ -94,40 +100,40 @@ export default function VehicleFilterOptions(props: {
         </div>
 
         <div className="font-bold text-2xl mt-5 md:mt-0" onClick={() => setRF(!showRF)}>
-          Route Filters <div title={'Click to ' + (showRF ? 'hide' : 'show') + ' route filters'} className={"inline-flex font-normal text-gray-500 " + (showRF ? '' : 'rotate-180')}>V</div>
+          Route Filters <div title={'Click to ' + (showRF ? 'hide' : 'show') + ' route filters'} className={`${ExpandArrowClass} ${showRF ? '' : 'rotate-180'}`}>V</div>
         </div>
 
-        {showRF ? <><div className="w-fit gap-x-7 text-center overflow-x-auto flex flex-wrap justify-center mx-auto">
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+        {showRF ? <><div className="transition-all delay-150 duration-500 w-fit sm:gap-x-9 text-left md:text-center overflow-x-auto grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:flex flex-wrap justify-center mx-auto [&_span]:whitespace-nowrap">
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.urban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all Urban</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          >Select all<RemoveUnderline> <RouteChip route={{ code: '1' }} inline text={"Urban"}/></RemoveUnderline></span>
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.suburban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all Suburban</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          >Select all<RemoveUnderline> <RouteChip route={{ code: '40' }} inline text={"Suburban"}/></RemoveUnderline></span>
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.local.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all Local</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          >Select all<RemoveUnderline> <RouteChip route={{ code: '151' }} inline text={"Local"}/></RemoveUnderline></span>
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => r.code.length && !(routeTrafficTypes.urban.concat(...routeTrafficTypes.suburban, ...routeTrafficTypes.local)).includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all Commuter</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          >Select all<RemoveUnderline> <RouteChip route={{ code: '80' }} inline text={"Express"}/></RemoveUnderline></span>
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: activeRoutes.map(r => r._id) })}
           >Select active only</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: undefined })}
           >Select all</span>
-          <span className="text-emerald-500 underline cursor-pointer whitespace-nowrap flex-shrink-0" onClick={() => 
+          <span className="action" onClick={() => 
             setFilters({ routeIdFilters: [] })}
           >Unselect All</span>
         </div>
 
-        <div className="bg-gray-50 shadow-inner shadow-gray-400 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 text-left p-3 px-4 rounded-md mt-3 mb-7">{(allRoutes ?? []).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
+        <div className={`${ContainerClass} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4`}>{(allRoutes ?? []).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
           <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
             <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
               !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
                 setFilters({ routeIdFilters: !e.target.checked ? filters.routeIdFilters.filter(f => f !== r._id) :
                   filters.routeIdFilters.concat(r._id)})
-            }/> <span><RouteChip route={{ code: r.code, id: r._id }}/></span> {r.name}
+            }/> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
           </label>
         )}</div></> : <p className="mb-4 italic">Route filters are currently hidden.</p>}
 
@@ -135,41 +141,38 @@ export default function VehicleFilterOptions(props: {
           <div className="font-bold text-2xl">
             Vehicle Model Filters
           </div>
-
           <div className="font-bold text-lg mt-3">
             Fuel Type & Length
           </div>
-          <div className="w-full flex items-center gap-x-6 flex-wrap justify-center md:justify-normal whitespace-nowrap ">
-            <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Fuel:</p>
-            <div className="basis-full h-0 md:hidden"/>
-            {Object.keys(FuelType).map(fuel =>
-              <p key={'F' + fuel} className="text-emerald-500 underline" onClick={() => 
-                setMakeModels(([_, v]) => v.fuelType === (fuel as keyof typeof FuelType))}
-              >Select {fuel}</p>
-            )}
-          </div>
-          <div className="w-full flex items-center gap-x-6 flex-wrap justify-center md:justify-normal whitespace-nowrap ">
-            <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Length:</p>
-            <div className="basis-full h-0 md:hidden"/>
-            {[...new Set(Object.values(VehicleInfo).map(vi => vi.length))].sort((a, b) => a - b).map(len =>
-              <p key={'L' + len} className="text-emerald-500 underline" onClick={() => 
-                setMakeModels(([_, v]) => v.length === len)
-              }>Select {len}{"'"}</p>
-            )}
-          </div>
-          <div className="w-full flex items-center gap-x-6 flex-wrap justify-center md:justify-normal whitespace-nowrap ">
-            <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Articulated:</p>
-            <div className="basis-full h-0 md:hidden"/>
-            <p className="text-emerald-500 underline" onClick={() => 
-              setMakeModels(([_, v]) => v.articulated)}
-            >
-              Select articulated
+          <div className="flex justify-center md:block gap-x-10 flex-wrap">
+            <div className={SelectClass}>
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Fuel:</p>
+              <div className="basis-full h-0 md:hidden"/>
+              {Object.keys(FuelType).map(fuel =>
+                <p key={'F' + fuel} className="action" onClick={() => 
+                  setMakeModels(([_, v]) => v.fuelType === (fuel as keyof typeof FuelType))}
+                >Select {fuel}</p>
+              )}
+            </div>
+            <div className={SelectClass}>
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Length:</p>
+              <div className="basis-full h-0 md:hidden"/>
+              {[...new Set(Object.values(VehicleInfo).map(vi => vi.length))].sort((a, b) => a - b).map(len =>
+                <p key={'L' + len} className="action" onClick={() => 
+                  setMakeModels(([_, v]) => v.length === len)
+                }>Select {len}{"'"}</p>
+              )}
+            </div>
+            <div className={SelectClass}>
+              <p className="font-bold mx-auto md:mx-0 text-lg w-fit">Articulated:</p>
+              <div className="basis-full h-0 md:hidden"/>
+              <p className="action" onClick={() => setMakeModels(([_, v]) => v.articulated)}>
+                Select articulated
               </p>
-            <p className="text-emerald-500 underline" onClick={() => 
-              setMakeModels(([_, v]) => !v.articulated)}
-            >
-              Select conventional
+              <p className="action" onClick={() => setMakeModels(([_, v]) => !v.articulated)}>
+                Select conventional
               </p>
+            </div>
           </div>
 
           <div className="font-bold text-lg mt-3">
@@ -217,14 +220,14 @@ export default function VehicleFilterOptions(props: {
         </div>
 
         <div className="w-fit mx-auto flex gap-x-6">
-          <p className="text-emerald-500 underline" onClick={() => setFilters({ makeModel: undefined })}>Select all</p>
-          <p className="text-emerald-500 underline" onClick={() => setFilters({ makeModel: [] })}>Unselect all</p>
+          <p className="action" onClick={() => setFilters({ makeModel: undefined })}>Select all</p>
+          <p className="action" onClick={() => setFilters({ makeModel: [] })}>Unselect all</p>
         </div>
 
-        <div className="bg-gray-50 shadow-inner shadow-gray-400 gap-y-2 text-left p-3 px-4 mt-2 rounded-md">
+        <div className={ContainerClass}>
           <div className="sm:flex w-fit sm:w-full mx-auto">
             {Object.keys(Manufacturer).map(man => <div key={"V"+man} className="w-full mb-3">
-              <p className="flex gap-2 pr-3 h-fit w-full font-bold text-center underline text-emerald-500" onClick={() => setFilters({
+              <p className="flex gap-2 pr-3 h-fit w-full font-bold text-center action" onClick={() => setFilters({
                 makeModel: [...new Set(Object.entries(VehicleInfo).filter(v => v[1].manufacturer === Manufacturer[man as keyof typeof Manufacturer]).map(([k]) => k as keyof typeof VehicleInfo).concat(filters.makeModel??[]))]
               })}>
                 All {Manufacturer[man as keyof typeof Manufacturer]}s

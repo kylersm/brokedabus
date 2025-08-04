@@ -73,7 +73,6 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
       {deduplicatedRoutes.length > 1 && <>Filter by route:
         { /* wont center on Safari mobile */ }
         <select 
-          className='ml-1 px-2 text-center safari-text-center border-black border-2 rounded-2xl w-fit' 
           onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}
           defaultValue={routeSlug ?? 'allbusses'}
         >

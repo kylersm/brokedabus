@@ -78,7 +78,7 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
     {isSkylineRoute ? <div className="font-bold text-xl italic mb-3">Skyline trains do not have GPS.</div> :<>
         <div className="font-bold text-xl mb-3">
           Current Vehicles<br/>
-          <Link className="text-base underline text-blue-500"
+          <Link className="text-base link"
             href={{
               pathname: "/route/[route]/map",
               query: { route: routeInfo.routeCode }

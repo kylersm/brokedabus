@@ -18,8 +18,10 @@ import VehiclePopup from './popups/VehiclePopup';
 
 import SmoothWheelZoom from "~/components/map/hooks/SmoothWheelZoom";
 import PolylineDecorator from "~/components/map/hooks/PolylineDecorator";
+import ThemeContext from '~/context/ThemeContext';
+import { Theme } from '~/lib/prefs';
 
-const activeMapBtn = "bg-slate-200 rounded-md shadow-sm";
+const activeMapBtn = "bg-slate-200 dark:bg-slate-700 rounded-md shadow-sm";
 
 export interface SuperficialVehicle extends PostRqVehicle {
   arrivalInfo?: PolishedArrival[];
@@ -85,6 +87,7 @@ export default function Map(props: {
 }) {
   const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, otherComps } = props;
 
+  const darkTheme = useContext(ThemeContext)?.[0] === Theme.DARK;
   // keeps track of open vehicle popups so we can dynamically show the user relevant shapes / stops.
   const openVehicles = useMemo(() => new Set<string>(), []);
   const [isMapSet, setIMS] = useState<boolean>();
@@ -141,7 +144,7 @@ export default function Map(props: {
       }
     }
     return () => AC.abort();
-  }, [vehicles, openVehicles, vehicleHook, wipeBus]);
+  }, [vehicles, openVehicles, vehicleHook, wipeBus, darkTheme]);
 
   // changes map terrain images
   const [mapMode, setMapMode] = useState<0|1|2>(0);
@@ -149,15 +152,15 @@ export default function Map(props: {
   const [zoomLvl, setZoom] = useState<number>(zoom ?? 11);
 
   return (<div className="w-auto flex-col flex overflow-hidden">
-    {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 w-full text-black'>
+    {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 dark:bg-black dark:bg-opacity-60 w-full'>
       <div className='w-full'>{header}</div>
     </div>}
     <div className="left-1/2 -translate-x-1/2 fixed flex z-10 bottom-20">
-      <div className="mx-auto p-1.5 bg-white rounded-xl flex shadow-lg">
+      <div className="mx-auto p-1.5 bg-white dark:bg-gray-500 rounded-xl flex shadow-btn">
         <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(0)}>
           Map
         </div>
-        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 border-x-2 border-x-white ${mapMode === 0 ? 'border-r-slate-200' : mapMode === 2 ? 'border-l-slate-200' : ''}`} onClick={() => setMapMode(1)}>
+        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 border-slate-200 dark:border-gray-400 ${mapMode === 0 ? 'border-r-2' : mapMode === 2 ? 'border-l-2' : 'border-x-2'}`} onClick={() => setMapMode(1)}>
           Hybrid
         </div>
         <div className={`${mapMode === 2 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(2)}>
@@ -199,17 +202,14 @@ export default function Map(props: {
         // h shows street names, places, etc.
         // m shows a mapped out view
         maxZoom={20}
-        maxNativeZoom={18}
+        maxNativeZoom={mapMode >= 1 ? 18 : 16}
         url={
-          mapMode === 2 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
-          mapMode === 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
-          /* mapMode is 0 */ 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+          mapMode >= 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
+          /* mapMode is 0 */ `http://services.arcgisonline.com/arcgis/rest/services/Canvas/${darkTheme ? 'World_Dark_Gray_Base' : 'World_Light_Gray_Base'}/MapServer/tile/{z}/{y}/{x}`
         }
 
         attribution={
-          mapMode === 2 ? 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' :
-          mapMode === 1 ? 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' :
-          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }
       />
       {mapMode === 1 && <TileLayer
@@ -366,10 +366,10 @@ function GenerateBusSVG(vehicle: string, direction?: number, route?: string): st
   const color = route ? brightenColor(getColorFromRoute({ code: route }), 0x111111) : "#ffffff";
   const text = route ? getContrastFromRoute({ code: route }) : '#000000';
   return "data:image/svg+xml," + encodeURIComponent(renderToStaticMarkup(<svg height={50} width={50} xmlns="http://www.w3.org/2000/svg">
-    <rect width={50} height={25} fill={route ? "#dc9" : '#fff'} stroke="#000000" strokeWidth={2}/>
-    <rect y={25} width={50} height={25} fill={color} stroke="#000000" strokeWidth={2}/>
+    <rect width={50} height={25} fill={route ? '#dc9' : '#fff'} stroke={'#000'} strokeWidth={2}/>
+    <rect y={25} width={50} height={25} fill={color} stroke={'#000'} strokeWidth={2}/>
 
-    <text x={25} y={25/2+5.5} textAnchor='middle' fontFamily="Verdana">{vehicle}</text>
+    <text x={25} y={25/2+5.5} textAnchor='middle' fontFamily="Verdana" fill={'#000'}>{vehicle}</text>
     <text x={25} y={25/2+25+5.5} textAnchor='middle' fill={text} fontFamily="Verdana">
       {direction === 0 && '«'}{route}{direction === 1 && '»'}
     </text>

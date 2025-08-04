@@ -115,7 +115,7 @@ function VehicleEntryPhoneInfo(props: {vehicle: TripVehicle }) {
     <Link href={{
       pathname: "/vehicle/[vehicle]",
       query: { vehicle: v.number }
-    }} className="font-bold text-lg inline text-blue-500 underline">BUS {v.number}</Link><br/>
+    }} className="font-bold text-lg inline link">BUS {v.number}</Link><br/>
 
     <span className="font-semibold">
       {v.tripInfo ? <><RouteChip inline route={{ code: v.tripInfo.routeCode, id: v.tripInfo.routeId }}/> {v.tripInfo.headsign}</> : <i>No Route Assigned</i>}<br/>
@@ -137,7 +137,7 @@ function VehicleEntryFullInfo(props: { vehicle: TripVehicle }) {
     <Link href={{
       pathname: "/vehicle/[vehicle]",
       query: { vehicle: vehicle.number }
-    }} className="font-bold text-lg inline text-blue-500 underline whitespace-nowrap overflow-hidden">BUS {vehicle.number}</Link>
+    }} className="font-bold text-lg inline whitespace-nowrap overflow-hidden link">BUS {vehicle.number}</Link>
 
     <i className="text-md ml-5 whitespace-nowrap overflow-hidden">{busInfoToShortString(getVehicleInformation(vehicle.number))}<br/></i>
 

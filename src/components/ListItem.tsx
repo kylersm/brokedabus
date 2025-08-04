@@ -60,8 +60,8 @@ export default function ListItem(props: PropsWithChildren & (TextItemProp | NoIc
     {props.href ? <td className={props.topArrow ? 'align-top' : ''}>
       <Link href={props.href} className="pl-1 text-5xl font-mono">
         <svg className="inline" height={30} width={30} viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-          <line strokeLinecap="round" x1={30} y1={55} x2={55} y2={30} strokeWidth={5} stroke="#000000"/>
-          <line strokeLinecap="round" x1={30} y1={5} x2={55} y2={30} strokeWidth={5} stroke="#000000"/>
+          <line strokeLinecap="round" className="item-arrow" x1={30} y1={55} x2={55} y2={30} strokeWidth={5}/>
+          <line strokeLinecap="round" className="item-arrow" x1={30} y1={5} x2={55} y2={30} strokeWidth={5}/>
         </svg>
       </Link>
     </td> : <></>}

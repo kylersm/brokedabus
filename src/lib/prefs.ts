@@ -1,11 +1,28 @@
 'use client';
 
+const THEME_KEY = "theme";
 const FAVORITE_STOPS_KEY = "favorites";
+
+export enum Theme {
+  AUTO='A',
+  DARK='D',
+  LIGHT='L'
+}
 
 export interface FavoriteStop {
   stop: string;
   name?: string;
 }
+
+export const getTheme = (): Theme => {
+  let ls = localStorage.getItem(THEME_KEY) as Theme | null;
+  const preferDark = ls === Theme.AUTO ? window.matchMedia("(prefers-color-scheme: dark)").matches : ls === Theme.DARK;
+  if(ls === null || !Object.values(Theme).includes(ls))
+    localStorage.setItem(THEME_KEY, ls = Theme.AUTO);
+  return preferDark ? Theme.DARK : Theme.LIGHT;
+}
+
+export const setTheme = (theme: Theme) => localStorage.setItem(THEME_KEY, theme);
 
 export const getFavoriteStops = (): FavoriteStop[] => {
   let needsChange = false;

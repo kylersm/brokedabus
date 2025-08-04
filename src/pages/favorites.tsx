@@ -69,7 +69,7 @@ export default function Favorites() {
               } : undefined}
               topEmoji
               emoji={editMode ? <>
-                <div className={"rotate-180 mb-3 " + (index === 0 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
+                <div className={"item-arrow rotate-180 mb-3 " + (index === 0 ? "cursor-not-allowed text-neutral-400 dark:text-neutral-500" : "font-bold cursor-pointer")}
                   title="Click to move up"
                   onClick={() => {
                     const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
@@ -78,7 +78,7 @@ export default function Favorites() {
                     setStops(newArray);
                   }}
                 >V</div>
-                <div className={(index === array.length - 1 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
+                <div className={"item-arrow " + (index === array.length - 1 ? "cursor-not-allowed text-neutral-400 dark:text-neutral-500" : "font-bold cursor-pointer")}
                   title="Click to move down"
                   onClick={() => {
                     const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
@@ -87,7 +87,7 @@ export default function Favorites() {
                     setStops(newArray);
                   }}
                 >V</div>
-                <div className={(index === array.length - 1 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
+                <div className={"cursor-pointer"}
                   title="Click to remove"
                   onClick={() => {
                     const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
@@ -105,12 +105,12 @@ export default function Favorites() {
                   });
                   setStops(newStops);
                 }}
-                className="block w-full border-2 rounded-md px-2 text-orange-500 text-center" 
+                className="block w-full border-2 rounded-md px-2 text-orange-500 text-center dark:bg-neutral-700 dark:border-neutral-400" 
                 type="text" 
                 value={stop.name}
                 placeholder="Change your label for this stop."
               /> : stop.name === undefined ? <></> : <div className="text-orange-500 text-xl font-bold text-center">{stop.name}</div>}
-              <b>{isRailStation(stop.info.code) ? "Rail Stop" : "Stop"} {stop.info.code} - {stop.info.name}</b><br/>
+              <b>{isRailStation(stop.info.code) ? "Rail Station" : "Stop"} {stop.info.code} - {stop.info.name}</b><br/>
               <ListTrips trips={stop.trips}/>
             </ListItem>)}
           </GenericTable>

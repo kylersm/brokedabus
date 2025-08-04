@@ -59,7 +59,7 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
   return (<PadPage>
     <HeadTitle>{`Stop ${stop} Arrivals: ${routesServed.info.name}`}</HeadTitle>
     <div className='mx-auto text-center'>
-      <div className='sticky w-full top-0 pt-3 bg-white -mt-4'>
+      <div className='sticky w-full top-0 pt-3 bg-[var(--background)] -mt-4'>
         <StopTitle stop={routesServed.info}/>
         {favoriteInfo?.name !== undefined && <div className='text-orange-500 font-bold text-xl'>{favoriteInfo.name}</div>}
         <hr className='mt-2'/>
@@ -73,7 +73,7 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
           { // show filter by route
             deduplicatedRoutes.length > 1 && <>Filter by route:
               { /* wont center on Safari mobile */ }
-              <select className='ml-1 px-2 text-center safari-text-center border-black border-2 rounded-2xl w-fit' onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}>
+              <select onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}>
                 <option value={"allbusses"} defaultChecked>ALL</option>
                 {deduplicatedRoutes.map(r => <option key={r.routeCode} value={r.routeCode}>{r.routeCode}</option>)}
               </select>
@@ -82,7 +82,7 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
         </div>
       }
 
-      <div className="text-blue-600 mb-4">
+      <div className="link mb-4">
         { // show map link
         typeof routeFilter === "string" ? 
           <Link href={{

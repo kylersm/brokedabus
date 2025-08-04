@@ -84,18 +84,18 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
 
     <b className='mt-5 mb-2 block text-2xl'>Map Info</b>
     <div className='flex gap-5 mx-auto w-fit'>
-      <Link className='text-blue-500 underline' href={{
+      <Link className='link' href={{
         pathname: "/vehicle/[vehicle]/map",
         query: { vehicle: vehicleInfo.number }
       }}>See live map</Link>
-      <Link className={`text-blue-500 ${tripInfo ? "inline-block" : "hidden"}`} href={{
+      <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/shape/[shape]",
         query: { shape: tripInfo?.shapeId }
-      }}><u>See subroute</u> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> <u>stops</u></Link>
-      <Link className={`text-blue-500 ${tripInfo ? "inline-block" : "hidden"}`} href={{
+      }}>See subroute <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> stops</Link>
+      <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/route/[route]",
         query: { route: tripInfo?.routeCode }
-      }}><u>See route</u> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> <u>info</u></Link>
+      }}>See route <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> info</Link>
     </div>
 
     {vehicleInfo && stops && <>
@@ -134,7 +134,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
                   { /* stop text */ }
                   <div>
                     <div className="text-lg font-semibold h-full w-fit md:w-[35rem]">
-                      <Link className='text-blue-500 underline' href={{
+                      <Link className='link' href={{
                           pathname: "/stop/[stop]/rta",
                           query: { stop: s.stop.code }
                       }}><span className='font-bold text-xl md:text-lg'>Stop {s.stop.code}</span> <span className='hidden md:inline'>-</span>
