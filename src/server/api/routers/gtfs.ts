@@ -2,7 +2,7 @@ import * as GTFS from "~/lib/GTFSTypes";
 import type * as Types from "~/lib/types";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { haversine, switchCanceled, switchEstimated, timeFromHNLString } from "~/lib/util";
+import { haversine, HST_UTC_OFFSET, switchCanceled, switchEstimated, timeFromHNLString } from "~/lib/util";
 import { type SuperficialRoute } from "~/components/Route";
 import { decode } from "html-entities";
 import { TRPCError } from "@trpc/server";
@@ -60,7 +60,7 @@ const getStopByCode = (feed: GTFSFeed, stopCode: string): Types.PolishedStop | u
 
 const getWeekArray = (c: GTFS.Calendar) => [c.sunday, c.monday, c.tuesday, c.wednesday, c.thursday, c.friday, c.saturday];
 
-const getStopHeadsignsForDate = (feed: GTFSFeed, stop: string, date=new Date()): Types.SuperficialTrip[] => {
+const getStopHeadsignsForDate = (feed: GTFSFeed, stop: string, date=new Date(Date.now() - HST_UTC_OFFSET * 1000)): Types.SuperficialTrip[] => {
   const stopTrips = feed.stop_times.filter(st => st.stop_code === stop).map(st => st.trip_id);
   const exceptions = feed.calendar_dates.filter(c => c.date === getYYYYMMDD(date.getTime()));
   const routines = feed.calendar
