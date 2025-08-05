@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type TripStopAIO, PolishedArrivalContainer } from "~/lib/types";
+import type { TripStopAIO, PolishedArrivalContainer } from "~/lib/types";
 import { HSTify } from "~/lib/util";
 import { api } from "~/utils/api";
 import { useMap, refetchInterval, DirectionKey, LastUpdated } from "../mapIntermediate";
