@@ -1,9 +1,13 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import PadPage from "~/components/templates/PadPage";
+import ThemeContext from "~/context/ThemeContext";
+import { setTheme, Theme } from "~/lib/prefs";
 
 export default function Home() {
   const [showNudge, setSN] = useState<boolean>();
+  const themeState = useContext(ThemeContext);
+
   return <>
     <div 
       onClick={() => setSN(false)}
@@ -21,6 +25,19 @@ export default function Home() {
           <i>BrokeDaBus</i> is meant to be an enhanced version of the DaBus2 app.<br/><br/>
 
           <span onClick={() => setSN(!showNudge)} className="italic text-emerald-500 underline cursor-pointer">Navigating</span> is done via the top bar. You can also go back between pages using the back arrow button in the top left corner.<br/><br/>
+
+          Need to change your theme?: <form 
+            className="flex space-x-6"
+            onChange={(e) => {
+              const newTheme = (e.target as HTMLInputElement).value as Theme;
+              themeState?.[1](newTheme);
+              setTheme(newTheme);
+            }}
+          >
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.AUTO} value={Theme.AUTO}/>Auto</label>
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.DARK} value={Theme.DARK}/>Dark</label>
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.LIGHT} value={Theme.LIGHT}/>Light</label>
+          </form>
 
           Features this app offers:<br/>
           <ul className="list-disc ml-5">

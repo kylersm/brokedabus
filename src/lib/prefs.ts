@@ -16,10 +16,9 @@ export interface FavoriteStop {
 
 export const getTheme = (): Theme => {
   let ls = localStorage.getItem(THEME_KEY) as Theme | null;
-  const preferDark = ls === Theme.AUTO ? window.matchMedia("(prefers-color-scheme: dark)").matches : ls === Theme.DARK;
   if(ls === null || !Object.values(Theme).includes(ls))
     localStorage.setItem(THEME_KEY, ls = Theme.AUTO);
-  return preferDark ? Theme.DARK : Theme.LIGHT;
+  return ls;
 }
 
 export const setTheme = (theme: Theme) => localStorage.setItem(THEME_KEY, theme);
