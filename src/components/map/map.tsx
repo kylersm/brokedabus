@@ -205,11 +205,12 @@ export default function Map(props: {
         maxNativeZoom={mapMode >= 1 ? 18 : 16}
         url={
           mapMode >= 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
-          /* mapMode is 0 */ `http://services.arcgisonline.com/arcgis/rest/services/Canvas/${darkTheme ? 'World_Dark_Gray_Base' : 'World_Light_Gray_Base'}/MapServer/tile/{z}/{y}/{x}`
+          /* mapMode is 0 */ `https://{s}.basemaps.cartocdn.com/${darkTheme ? 'dark_all' : 'light_all'}/{z}/{x}/{y}${L.Browser.retina ? '@2x' : ''}.png`
         }
-
+        subdomains={['a','b','c','d']}
         attribution={
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+          mapMode >= 1 ? 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' :
+          /* mapMode is 0 */ '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }
       />
       {mapMode === 1 && <TileLayer
