@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { getHSTTime, HST_UTC_OFFSET, HSTify, quantifyTimeShortened } from "~/lib/util";
 import Spinner from "../Spinner";
 import ThemeContext from "~/context/ThemeContext";
+import { Theme } from "~/lib/prefs";
 
 // list of utilities for map-related purposes
 
@@ -22,7 +23,7 @@ export const isUnfocused = (openTrips: string[], shid: string, activeShapes?: st
 
 // user can click on directions to filter routes going in the direction if set state is provided
 export const DirectionKey = (props: { directionHook?: Dispatch<SetStateAction<number|undefined>> }) => {
-  const darkTheme = useContext(ThemeContext)?.[0];
+  const darkTheme = useContext(ThemeContext)?.[0] === Theme.DARK;
   const [direction, setDirection] = useState<number>();
   // undefined none, 0 west, 1 east
   const onClickDirection = (value: number) => {
