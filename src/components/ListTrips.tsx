@@ -4,6 +4,7 @@ import ListItem from "./ListItem";
 import { useState } from "react";
 import { sortRouteCodes } from "~/lib/util";
 import Button from "./Button";
+import GenericTable from "./GenericTable";
 
 /**
  * List of trips to convey in an element
@@ -35,20 +36,18 @@ export default function ListTrips(props: {
     {!props.hideRoutes && <span className="font-semibold">{props.trips.length > 1 ? "Routes" : "Route"} served: </span>}
     { 
       compressChips ?
-      deduplicatedRoutes.map((r, i) => <div className="inline" key={props.key + r.headsign + r.routeId}>{i > 0 ? ' ' : ''}
+      deduplicatedRoutes.map((r, i) => <div className="inline text-base" key={props.key + r.headsign + r.routeId}>{i > 0 ? ' ' : ''}
         <RouteChip route={{ code: r.routeCode, id: r.routeId }} inline/>
       </div>) :
-      <table className="border-spacing-y-1 ml-4 text-left">
-        <tbody>
-          {props.trips.filter((t, i, a) => a.findIndex(t2 => t2.displayCode === t.displayCode) === i).sort((a, b) => sortRouteCodes(a.routeCode, b.routeCode)).map(t => <ListItem
-            key={t.routeId+t.headsign}
-            emoji={<RouteChip route={{ code: t.routeCode, id: t.routeId}}/>}
-            topEmoji
-          >
-            {t.headsign}
-          </ListItem>)}
-        </tbody>
-      </table>
+      <GenericTable noSmallSeparators noGap noCenter>
+        {props.trips.filter((t, i, a) => a.findIndex(t2 => t2.displayCode === t.displayCode) === i).sort((a, b) => sortRouteCodes(a.routeCode, b.routeCode)).map(t => <ListItem
+          key={t.routeId+t.headsign}
+          emoji={<RouteChip route={{ code: t.routeCode, id: t.routeId}}/>}
+          topEmoji
+        >
+          {t.headsign}
+        </ListItem>)}
+      </GenericTable>
     }
     {props.allowCompression && 
     <div className="mt-5">

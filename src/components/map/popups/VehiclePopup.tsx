@@ -15,10 +15,10 @@ import { getNextTripLayover } from "~/lib/GTFSBinds";
  *    [Dep/Arr] in [time]
  *    [Distance in miles] away from stop
  *  ]
- *  [Adherence; [Time] behind/ahead of schedule]
+ *  [Adherence: [Time] behind/ahead of schedule]
  *  [If block info is present, one is shown:
  *    [On layover until...]         -
- *    [Driver may skip layover...]  -- Next trip details (route chip and headsign) are also shown
+ *    [Driver may skip layover...]  -- Next trip details (route chip and headsign) are also shown if it doesn't match arrival trips
  *    [Next trip is starting]       -
  *    [Nothing if in middle of trip]
  *    [Ended last trip, so go back to facility]
@@ -36,7 +36,7 @@ export default function VehiclePopup(props: {
 }) {
   const { vehicle, vehiclePage } = props;
 
-  const arrival = vehicle.arrivalInfo;
+  const arrivals = vehicle.arrivalInfo;
 
   const info = getVehicleInformation(vehicle.number);
   const routeChip = vehicle.tripInfo ? <RouteChip 
@@ -54,56 +54,61 @@ export default function VehiclePopup(props: {
   // complicated line of code to handle grammar with counting minutes and whether the bus is behind/ahead of/on
   // if vehicle wasnt given we'll just say where it's going
   // refer to https://hea.thebus.org/api/documentation/vehicleJSON.pdf on how adherence works
-  const schedule = vehicle ? 
-                                 // about 1 second
+  const schedule = // about 1 second
     (Math.abs(vehicle.adherence) <= 0.02 ? "On" : 
       quantifyTime(Math.abs(vehicle.adherence * 60)) + ' ' +
-    (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule" : `Headed ${arrival?.trip.direction ? "Eastbound" : "Westbound"}`;
+    (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule";
 
   const now = getHSTTime();
   const tripNow = now + vehicle.adherence * 60;
-  const nextDelta = (blocks?.next?.firstArrives ?? 0) > (24 * 60 * 60) ? 24 * 60 * 60 : 0;
-  const nextTrip = blocks?.next ? <div className="mt-2">
+  const currentIsTmrw = tripNow >= 24 * 60 * 60;
+  const nextDelta = (blocks?.next?.firstArrives ?? 0) > (24 * 60 * 60) && currentIsTmrw ? 24 * 60 * 60 : 0;
+  const nextTrip = !arrivals && blocks?.next ? <div className="mt-2">
     <b>Next trip:</b> <RouteChip route={{ code: blocks.next.routeCode, id: blocks.next.routeId }} inline/> {blocks.next.headsign}
-  </div> : <></>;
+  </div> : null;
   return <>
     {!vehiclePage && <>
-      <div className="text-center font-bold text-lg"><Link className="text-blue-500 underline" href={{
+      <div className="text-center font-bold text-lg"><Link className="link" href={{
         pathname: "/vehicle/[vehicle]",
         query: { vehicle: vehicle.number }
       }}>Bus {vehicle.number}</Link> {info && <span className="font-normal italic text-sm">{busInfoToShortString(info)}</span>}</div>
       <div className="text-center mb-2">{routeChip} {headsign}</div>
     </>}
-    {arrival &&  <>
-      {!vehicle?.tripInfo?.trips.some(t => arrival.trip.trips.includes(t)) && <i>Future Trip: <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</i>}
-      <div>{`${arrival.departing ? "Departing" : "Arriving"} ${arrivalString(arrival.stopTime)}`}, {quantifyMiles(arrival.distance / 1603.344)} away from stop<br/></div>
-    </>}
-    {schedule}<br/>
+    {arrivals?.sort((a, b) => a.stopTime.getTime() - b.stopTime.getTime()).map((a,i) => {
+      const style = i === 0 ? 'font-bold' : 'italic';
+      return <div key={a.id}>
+        {
+          a.trip.trips.every(t => vehicle.tripInfo?.trips.includes(t)) ? <div><span className={style}>This trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
+          blocks?.next?.trips.every(t => a.trip.trips.includes(t)) ? <div><span className={style}>Next trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
+          <div><span className={style}>As</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div>
+        }
+        <div className="font-bold text-center">{`${a.departing ? "Departing" : "Arriving"} ${arrivalString(a.stopTime)}`}</div>
+        <div className="italic text-center">{quantifyMiles(a.distance / 1603.344)} away from stop</div><br/>
+      </div>;
+    })}
+    {schedule}
     {blocks && <>{
-      blocks.next ? 
-        (tripNow+nextDelta > blocks.end || (vehicle.adherence >= 0 && now+nextDelta > blocks.end)) && now+nextDelta < blocks.next.firstArrives  ? <>
+        blocks.next && (tripNow+nextDelta > blocks.end || (vehicle.adherence >= 0 && now+nextDelta > blocks.end)) && now+nextDelta < blocks.next.firstArrives ? <>,
           On layover until {HSTify(new Date((blocks.next.firstArrives + HST_UTC_OFFSET) * 1000), true)}<br/>
           {nextTrip}
         </> :
-        tripNow+nextDelta > blocks.end && tripNow+nextDelta >= blocks.next.firstArrives && now+nextDelta <= blocks.next.firstArrives ? <>
+        blocks.next && tripNow+nextDelta > blocks.end && tripNow+nextDelta >= blocks.next.firstArrives && now+nextDelta <= blocks.next.firstArrives ? <>, 
           Driver may skip layover<br/>
           {nextTrip}
         </> :
-        tripNow+nextDelta >= blocks.next.firstArrives ? <>
+        blocks.next && tripNow+nextDelta >= blocks.next.firstArrives ? <>, 
           Next trip is starting.<br/>
           {nextTrip}
         </> :
-      // BAU 
-      <>
-        {/* todo: add some sort of next stop thing? */}
-      </> : tripNow+nextDelta > blocks.end ? <>
-        Ended last trip; heading back to bus facility
-      </> : <>
-        Last trip for bus.
+        tripNow+nextDelta > blocks.end ? <>, 
+          Ended last trip; heading back to bus facility
+        </> : <>
+        {!blocks.next ? <>, Last trip for bus.</> : null}
+        {vehicle.nextStop ? <div><b>NEXT STOP:</b> {vehicle.nextStop.stop.code} - {vehicle.nextStop.stop.name}</div> : null}
       </>
     }</>}
     <hr className="my-2"/>
-    <div className="flex gap-x-4 w-fit mx-auto">
+    <div className="flex gap-x-2 w-fit mx-auto">
       {vehicle.tripInfo?.trips ? <span>Trip {vehicle.tripInfo.trips.join(', ')}</span> : ''}
       {vehicle.block ? <span>Block {vehicle.block.name.split('-')[1]}</span> : ''}
       {vehicle.driver ? <span>Driver {vehicle.driver}</span> : <i>Unknown driver</i>}

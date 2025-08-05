@@ -6,10 +6,24 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import Head from "next/head";
 import Navbar from "~/components/Navbar";
+import { getTheme, Theme } from "~/lib/prefs";
+import { useEffect, useRef, useState } from "react";
+import ThemeContext from "~/context/ThemeContext";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  return (
-    <div className={`${GeistSans.className} flex flex-col pt-12 h-dvh`}>
+  const ref = useRef<HTMLDivElement>(null);
+  const [thm, setThm] = useState<Theme>(Theme.AUTO);
+  const [usableTheme, setUTheme] = useState<Theme>(Theme.LIGHT);
+  useEffect(() => {
+    setThm(getTheme);
+  }, []);
+
+  useEffect(() => {
+    setUTheme(thm === Theme.AUTO ? window.matchMedia("(prefers-color-scheme: dark)").matches ? Theme.DARK : thm : thm);
+  }, [thm]);
+
+  return (<ThemeContext value={[usableTheme, setThm]}>
+    <div ref={ref}id="top" className={`${GeistSans.className} flex flex-col pt-12 h-dvh ${usableTheme === Theme.DARK ? 'dark' : ''}`}>
       <Head>
         <title>BrokeDaBus</title>
         <meta name="description" content="An open source version of DaBus2 app, catered to bus enthusiasts."/>
@@ -22,7 +36,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <Component {...pageProps}/>
       </div>
     </div>
-  );
+  </ThemeContext>);
 };
 
 export default api.withTRPC(MyApp);

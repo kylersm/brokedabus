@@ -1,12 +1,16 @@
 import { type Config } from "tailwindcss";
-import { fontFamily } from "tailwindcss/defaultTheme";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 export default {
   content: ["./src/**/*.tsx"],
   theme: {
+    screens: {
+      'xs': '32rem',
+      ...defaultTheme.screens
+    },
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        sans: ["var(--font-geist-sans)", ...defaultTheme.fontFamily.sans],
         jpn: [""]
       },
       boxShadow: {
@@ -20,5 +24,6 @@ export default {
       }
     },
   },
+  darkMode: "class",
   plugins: [],
 } satisfies Config;

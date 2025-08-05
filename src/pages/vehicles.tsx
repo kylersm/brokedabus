@@ -32,7 +32,7 @@ export default function VehiclesList() {
             <div className="text-emerald-500 underline cursor-pointer" onClick={() => setSF(true)}>
               Click to see filter options
             </div>
-            <Link className="text-blue-500 underline" href={"/vehicles/map"}>
+            <Link className="link" href={"/vehicles/map"}>
               View map
             </Link>
           </div>

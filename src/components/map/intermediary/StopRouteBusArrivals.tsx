@@ -4,7 +4,7 @@ import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, DirectionKey, LastUpdated, refetchInterval } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
-import type { PolishedArrivalContainer, TripStopAIO } from "~/lib/types";
+import type { PolishedArrivalsContainer, TripStopAIO } from "~/lib/types";
 import { sortString } from "~/lib/util";
 import { useSearchParams } from "next/navigation";
 
@@ -28,7 +28,13 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
 
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
 
-  const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ shids: arrivals?.filter(a => a.vehicle && openVehicles.includes(a.vehicle.number)).map(a => a.arrival.trip.shapeId) ?? [] }, {
+  const fullOpenVehicles = arrivals?.filter(a => a.vehicle && openVehicles.includes(a.vehicle.number)) ?? [];
+  const arrivalShapes = fullOpenVehicles.flatMap(a => a.arrivals.map(a => a.trip.shapeId));
+  const currentShapes = fullOpenVehicles.map(a => a.vehicle?.tripInfo?.shapeId).filter(s => typeof s === "string");
+
+  const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ 
+    shids: arrivalShapes.concat(...currentShapes)
+  }, {
     enabled: !!arrivals?.length
   });
 
@@ -57,17 +63,16 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
     }
   }, [map, zoomed, arrivals, stop]);
 
-  const arrivalsWithFilters = arrivals?.filter((a): a is Required<PolishedArrivalContainer> => !!a.vehicle && (!routeFilter || a.arrival?.trip.routeCode === routeFilter));
+  const arrivalsWithFilters = arrivals?.filter((a): a is Required<PolishedArrivalsContainer> => !!a.vehicle && (!routeFilter || a.arrivals.some(a => a.trip.routeCode === routeFilter)));
 
   return <Map
     refHook={setMap}
     header={<>{routeFilter ?
       <>Incoming busses at Stop {stop.info.code} - {stop.info.name} for route <RouteChip route={{ code: routeFilter }} inline /></> :
-      <>Incoming busses for Stop {stop.info.code} - {stop.info.name}</>} ({arrivalsWithFilters?.length} bus{arrivalsWithFilters?.length === 1 ? '' : "ses"})<br/>
+      <>Incoming busses for Stop {stop.info.code} - {stop.info.name}</>} {arrivalsWithFilters ? <>({arrivalsWithFilters?.length} bus{arrivalsWithFilters?.length === 1 ? '' : "ses"})</> : ''}<br/>
       {deduplicatedRoutes.length > 1 && <>Filter by route:
         { /* wont center on Safari mobile */ }
         <select 
-          className='ml-1 text-center safari-text-center border-black border-2 rounded-2xl w-fit' 
           onChange={c => setRouteFilter(c.target.value === "allbusses" ? undefined : c.target.value)}
           defaultValue={routeSlug ?? 'allbusses'}
         >
@@ -84,7 +89,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
       arrivalsWithFilters
         .map(a => ({ 
           ...a.vehicle,
-          arrivalInfo: a.arrival
+          arrivalInfo: a.arrivals
         }))
       : []}
     vehicleHook={setOpenVehicles}
@@ -97,5 +102,6 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
     routePath={shapes?.map(s => ({
       direction: s.direction === 1 ? 'East' : 'West',
       routePath: s,
+      unfocused: !currentShapes.includes(s.shapeId)
     }))} />;
 }

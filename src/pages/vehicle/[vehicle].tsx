@@ -13,9 +13,10 @@ import { useEffect, useState } from 'react';
 import ListItem from '~/components/ListItem';
 import NotFound from '~/components/NotFound';
 import Button from '~/components/Button';
-import { getExpectedTripFromBC } from '~/lib/GTFSBinds';
+import { getExpectedTrip } from '~/lib/GTFSBinds';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
+import GenericTable from '~/components/GenericTable';
 
 const staleColor = '#999999';
 const isArrivalFresh = (arrived: number) => arrived + 65 >= 0;
@@ -29,7 +30,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       else return 10000;
     }
   });
-  const tripInfo = vehicleInfo ? getExpectedTripFromBC(vehicleInfo.block, vehicleInfo.trip, vehicleInfo.adherence) : undefined;
+  const tripInfo = getExpectedTrip(vehicleInfo?.block);
   const { data: stops } = api.gtfs.getStopsByTripID.useQuery({ tripId: tripInfo?.trips ?? [] }, {
     enabled: !!tripInfo?.trips.length
   })
@@ -83,18 +84,18 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
 
     <b className='mt-5 mb-2 block text-2xl'>Map Info</b>
     <div className='flex gap-5 mx-auto w-fit'>
-      <Link className='text-blue-500 underline' href={{
+      <Link className='link' href={{
         pathname: "/vehicle/[vehicle]/map",
         query: { vehicle: vehicleInfo.number }
       }}>See live map</Link>
-      <Link className={`text-blue-500 ${tripInfo ? "inline-block" : "hidden"}`} href={{
+      <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/shape/[shape]",
         query: { shape: tripInfo?.shapeId }
-      }}><u>See subroute</u> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> <u>stops</u></Link>
-      <Link className={`text-blue-500 ${tripInfo ? "inline-block" : "hidden"}`} href={{
+      }}>See subroute <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> stops</Link>
+      <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/route/[route]",
         query: { route: tripInfo?.routeCode }
-      }}><u>See route</u> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> <u>info</u></Link>
+      }}>See route <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> info</Link>
     </div>
 
     {vehicleInfo && stops && <>
@@ -133,7 +134,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
                   { /* stop text */ }
                   <div>
                     <div className="text-lg font-semibold h-full w-fit md:w-[35rem]">
-                      <Link className='text-blue-500 underline' href={{
+                      <Link className='link' href={{
                           pathname: "/stop/[stop]/rta",
                           query: { stop: s.stop.code }
                       }}><span className='font-bold text-xl md:text-lg'>Stop {s.stop.code}</span> <span className='hidden md:inline'>-</span>
@@ -158,8 +159,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       <Button onClick={() => setPB(!seePrevBlocks)}>
         {seePrevBlocks ? "Hide" : "Show"} previous trips
       </Button>
-      <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-        <tbody>
+      <GenericTable>
         {vehicleInfo.block.trips.filter((_, i, a) => seePrevBlocks || a.findIndex(b3 => b3.trips === tripInfo?.trips) <= i).map((b, i, a) => <ListItem 
           emoji={<RouteChip route={{ code: b.routeCode, id: b.routeId }}/>}
           topEmoji
@@ -183,8 +183,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
             Trip {b.trips.join(', ')} | {HSTify(new Date((b.firstArrives + HST_UTC_OFFSET) * 1000), true)} - {HSTify(new Date((b.lastDeparts + HST_UTC_OFFSET) * 1000), true)}<br/>
           </div>
         })()}</ListItem>)}
-        </tbody>
-      </table>
+      </GenericTable>
       <div className='italic mb-14'>~End of block~</div>
     </>}
   </PadPage>);

@@ -10,7 +10,7 @@ export default function Button(props: {
 } & React.PropsWithChildren) {
   return <div 
     onClick={props.onClick} 
-    className={"mx-auto w-fit " + (props.color ?? Color.GRAY) + " cursor-pointer text-white px-3 py-2 rounded-lg my-3 shadow-md shadow-gray-300 active:shadow-inner"}
+    className={"mx-auto w-fit " + (props.color ?? Color.GRAY) + " cursor-pointer text-white px-3 py-2 rounded-lg my-3 shadow-md shadow-neutral-300 dark:shadow-black active:shadow-inner"}
   >
     {props.children}
   </div>;

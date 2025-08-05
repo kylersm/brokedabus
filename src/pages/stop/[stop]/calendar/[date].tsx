@@ -16,6 +16,7 @@ import Button from "~/components/Button";
 import HalfTable from "~/components/HalfTable";
 import PadPage from "~/components/templates/PadPage";
 import { api } from "~/utils/api";
+import { ContainerClass, ExpandArrowClass } from "~/components/VehicleFilterOptions";
 
 const clocks = [
   '🕛', '🕧', 
@@ -81,7 +82,7 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
     
   return (<PadPage center>
     <HeadTitle>{`Stop ${stop} Schedule: ${routesServed.info.name}`}</HeadTitle>
-    <div className='sticky w-full top-0 pt-3 bg-white -mt-4'>
+    <div className='sticky w-full top-0 pt-3 bg-[var(--background)] -mt-4'>
       <StopTitle stop={routesServed.info}/>
       <span className={routesServed.trips.length ? '' : "italic"}>
         {routesServed.trips.length ? "Arrivals" : "No arrivals found"} for {relation}{toNiceDateString(new Date(dateFromHNLString(date)))}
@@ -98,7 +99,7 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
       </Button>}
     </div>
 
-    {seeRouteFilters && <div className="my-3 bg-gray-50 shadow-inner shadow-gray-400 gap-y-2 text-left p-3 px-4 mt-2 rounded-md w-fit mx-auto">
+    {seeRouteFilters && <div className={ContainerClass + ' w-fit mx-auto'}>
       <div className="text-center space-x-5 my-3">
         <span className="text-emerald-500 underline cursor-pointer mt-5" onClick={() => setRF(undefined)}>
           Select all
@@ -125,7 +126,7 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
     {!isLoading ? calendar.length ? calendarWithFilters.length ? <div className={`${!((AM.length / AM.length) ^ (PM.length / PM.length) /* check to see if one or other is empty so we can center the one that isn't empty */) ? "md:flex" : ''} inline-block mt-5`}>
       {AM.length ? <HalfTable caption={
         <div onClick={() => setSAM(!seeAM)} className="cursor-pointer">
-          Morning (AM) <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' morning times'} className={"inline-flex font-normal text-gray-500 " + (seeAM ? '' : 'rotate-180')}>V</div>
+          Morning (AM) <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' morning times'} className={ExpandArrowClass + (seeAM ? '' : ' rotate-180')}>V</div>
           <br/><hr/>
         </div>
       }>
@@ -142,7 +143,7 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
 
       {PM.length ? <HalfTable caption={
         <div onClick={() => setSPM(!seePM)} className="cursor-pointer">
-          Afternoon (PM) & Tomorrow <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' afternoon times'} className={"inline-flex font-normal text-gray-500 " + (seePM ? '' : 'rotate-180')}>V</div>
+          Afternoon (PM) & Tomorrow <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' afternoon times'} className={ExpandArrowClass + (seePM ? '' : ' rotate-180')}>V</div>
           <br/><hr/>
         </div>
       }>

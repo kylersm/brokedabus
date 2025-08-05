@@ -1,9 +1,13 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import PadPage from "~/components/templates/PadPage";
+import ThemeContext from "~/context/ThemeContext";
+import { setTheme, Theme } from "~/lib/prefs";
 
 export default function Home() {
   const [showNudge, setSN] = useState<boolean>();
+  const themeState = useContext(ThemeContext);
+
   return <>
     <div 
       onClick={() => setSN(false)}
@@ -22,6 +26,19 @@ export default function Home() {
 
           <span onClick={() => setSN(!showNudge)} className="italic text-emerald-500 underline cursor-pointer">Navigating</span> is done via the top bar. You can also go back between pages using the back arrow button in the top left corner.<br/><br/>
 
+          Need to change your theme?: <form 
+            className="flex space-x-6"
+            onChange={(e) => {
+              const newTheme = (e.target as HTMLInputElement).value as Theme;
+              themeState?.[1](newTheme);
+              setTheme(newTheme);
+            }}
+          >
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.AUTO} value={Theme.AUTO}/>Auto</label>
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.DARK} value={Theme.DARK}/>Dark</label>
+            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.LIGHT} value={Theme.LIGHT}/>Light</label>
+          </form>
+
           Features this app offers:<br/>
           <ul className="list-disc ml-5">
             <li>Showing stop arrivals and calendar</li>
@@ -38,32 +55,32 @@ export default function Home() {
           <ul className="list-disc ml-5">
             <li>
               To know how to go from A to B
-              <p className="ml-2">See <a className="text-blue-500 underline" href="https://transitapp.com/">Transit App</a> or your Maps app</p>
+              <p className="ml-2">See <a className="link" href="https://transitapp.com/">Transit App</a> or your Maps app</p>
             </li>
             <li>
               To see service disruptions & detours
-              <p className="ml-2">Visit <a className="text-blue-500 underline" href="https://thebus.org/">TheBus</a> website</p>
+              <p className="ml-2">Visit <a className="link" href="https://thebus.org/">TheBus</a> website</p>
             </li>
             <li>
               To suggest new features for BrokeDaBus
-              <p className="ml-2">Request at <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus/issues">BrokeDaBus</a> code repository</p>
+              <p className="ml-2">Request at <a className="link" href="https://github.com/shringo/brokedabus/issues">BrokeDaBus</a> code repository</p>
             </li>
           </ul><br/>
 
           <b>Developer & Source Code</b><br/>
-          <a className="text-blue-500 underline" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
+          <a className="link" href="https://github.com/shringo/brokedabus">shringo - BrokeDaBus</a><br/>
           <i>Not affiliated with Oahu Transit Services</i><br/><br/>
 
           <b>Inspired By</b><br/>
-          <a className="text-blue-500 underline" href="https://pantographapp.com">Pantograph App</a><br/>
-          <a className="text-blue-500 underline" href="https://hea.thebus.org/">TheBusHEA</a><br/><br/>
+          <a className="link" href="https://pantographapp.com">Pantograph App</a><br/>
+          <a className="link" href="https://hea.thebus.org/">TheBusHEA</a><br/><br/>
 
           <b>Tools Used</b><br/>
           <ul className="list-disc ml-5">
-            <li><a className="text-blue-500 underline" href="https://hea.thebus.org/api_info.asp">TheBus ‘HEA API</a></li>
-            <li><a className="text-blue-500 underline" href="https://leafletjs.com/">Leaflet</a></li>
-            <li><a className="text-blue-500 underline" href="https://tailwindcss.com/">TailwindCSS (Styling)</a></li>
-            <li><a className="text-blue-500 underline" href="https://create.t3.gg/">T3 stack</a></li>
+            <li><a className="link" href="https://hea.thebus.org/api_info.asp">TheBus ‘HEA API</a></li>
+            <li><a className="link" href="https://leafletjs.com/">Leaflet</a></li>
+            <li><a className="link" href="https://tailwindcss.com/">TailwindCSS (Styling)</a></li>
+            <li><a className="link" href="https://create.t3.gg/">T3 stack</a></li>
           </ul><br/>
         </span>
       </div>

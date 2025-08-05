@@ -2,8 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: white;
+  --text: black;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+#top.dark {
+  --background: #232323;
+  --text: white;
+}
+
+label input[type=radio] {
+  @apply mr-1
+}
+
+.link {
+  @apply text-blue-500 underline cursor-pointer
+}
+
+.routechip {
+  @apply h-fit break-keep text-white text-center px-3 min-w-12 rounded-sm
+}
+
+.dark .link, .dark .leaflet-container a {
+  @apply text-blue-300
+}
+
+.dark .font-bold.link {
+  @apply text-blue-400
+}
+
+.action {
+  text-decoration: underline;
+  @apply text-emerald-500 cursor-pointer
+}
+
+.dark .action {
+  @apply text-emerald-400
+}
+
+.shadow-btn {
+  @apply shadow-lg;
+}
+
+.dark .shadow-btn {
+  @apply shadow-lg shadow-[rgba(0,0,0,50)] divide-opacity-50
+}
+
 html {
   overflow: hidden;
+}
+
+#top {
+  background: var(--background);
+  color: var(--text);
+}
+
+line.item-arrow {
+  stroke: black;
+}
+
+.dark line.item-arrow {
+  stroke: white;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background-color: var(--background);
+  color: #ddd;
+}
+
+.dark {
+  .leaflet-popup-tip {
+    background-color: var(--background);
+  }
+}
+
+.dark hr {
+  border-color: #555;
+  /* might need to add background-color? */
+}
+
+input[type=text] {
+  @apply border-2 rounded-xl px-3 mr-3
+}
+
+.dark input[type=text] {
+  @apply bg-neutral-600 border-neutral-400
+}
+
+input.submit-btn {
+  @apply border-2 rounded-xl px-2 bg-blue-500 text-white active:bg-blue-600
+}
+
+.dark input.submit-btn {
+  @apply border-neutral-400
+}
+
+select {
+  @apply ml-1 px-2 text-center safari-text-center border-black border-2 rounded-2xl w-fit
+}
+
+.dark select {
+  @apply bg-neutral-500
 }
 
 /* prevent bounce when scrolling too hard */

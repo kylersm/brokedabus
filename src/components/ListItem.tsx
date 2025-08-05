@@ -1,6 +1,6 @@
 import type { Url } from "next/dist/shared/lib/router/router";
 import Link from "next/link";
-import type { PropsWithChildren } from "react";
+import { type JSX, type PropsWithChildren } from "react";
 
 interface BaseProp {
   href?: Url;           // arrow will appear if this exists.
@@ -45,23 +45,23 @@ export default function ListItem(props: PropsWithChildren & (TextItemProp | NoIc
   }
 
   const finalElement = <tr>
-    <th className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
+    <td className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
       <Linkify href={props.href}>
         {SideIcon}
       </Linkify>
-    </th>
+    </td>
 
-    <td className="min-w-max h-fit min-h-12 pr-2 align-middle">
+    <td className="h-fit min-h-12 pr-2 align-middle">
       <Linkify href={props.href}>
-        <div>{props.children}</div>
+        <div className="w-fit">{props.children}</div>
       </Linkify>
     </td>
 
     {props.href ? <td className={props.topArrow ? 'align-top' : ''}>
       <Link href={props.href} className="pl-1 text-5xl font-mono">
         <svg className="inline" height={30} width={30} viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-          <line strokeLinecap="round" x1={30} y1={55} x2={55} y2={30} strokeWidth={5} stroke="#000000"/>
-          <line strokeLinecap="round" x1={30} y1={5} x2={55} y2={30} strokeWidth={5} stroke="#000000"/>
+          <line strokeLinecap="round" className="item-arrow" x1={30} y1={55} x2={55} y2={30} strokeWidth={5}/>
+          <line strokeLinecap="round" className="item-arrow" x1={30} y1={5} x2={55} y2={30} strokeWidth={5}/>
         </svg>
       </Link>
     </td> : <></>}

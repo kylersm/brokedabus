@@ -9,6 +9,7 @@ import { api } from "~/utils/api";
 import HeadTitle from "~/components//HeadTitle";
 import { type TripStopAIO } from "~/lib/types";
 import Button, { Color } from "~/components//Button";
+import GenericTable from "~/components/GenericTable";
 
 export default function Favorites() {
 
@@ -51,70 +52,68 @@ export default function Favorites() {
       </Button> : ''}
       {heaStops && stops ? heaStops.length ? <>
         <div>Showing {heaStops.length} stop{heaStops.length > 1 ? 's' : ''}</div>
-          <table className="text-left mx-auto border-spacing-y-5 border-separate px-4 table-fixed">
-            <tbody>
-              {stops
-                .map(stop => {
-                  const hea = heaStops.find(s => s.info.code === stop.stop);
-                  if(!hea) return undefined;
-                  return { name: stop.name, ...hea }
-                })
-                .filter(s => s !== undefined)
-                .map((stop, index, array) => <ListItem
-                key={stop.info.code}
-                topArrow
-                href={!editMode ? {
-                  pathname: "/stop/[stop]",
-                  query: { stop: stop.info.code }
-                } : undefined}
-                topEmoji
-                emoji={editMode ? <>
-                  <div className={"rotate-180 mb-3 " + (index === 0 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
-                    title="Click to move up"
-                    onClick={() => {
-                      const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
-                      const item = newArray.splice(index, 1);
-                      newArray.splice(index - 1, 0, ...item);
-                      setStops(newArray);
-                    }}
-                  >V</div>
-                  <div className={(index === array.length - 1 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
-                    title="Click to move down"
-                    onClick={() => {
-                      const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
-                      const item = newArray.splice(index, 1);
-                      newArray.splice(index + 1, 0, ...item);
-                      setStops(newArray);
-                    }}
-                  >V</div>
-                  <div className={(index === array.length - 1 ? "cursor-not-allowed text-gray-500" : "cursor-pointer")}
-                    title="Click to remove"
-                    onClick={() => {
-                      const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
-                      newArray.splice(index, 1);
-                      setStops(newArray);
-                    }}
-                  >–</div>
-                </>: undefined}
-              >
-                {editMode ? <input 
-                  onChange={(evt) => {
-                    const newStops = array.map(s => {
-                      if(s.info.code === stop.info.code) return { stop: s.info.code, name: evt.target.value };
-                      else return { stop: s.info.code, name: s.name };
-                    });
-                    setStops(newStops);
+          <GenericTable>
+            {stops
+              .map(stop => {
+                const hea = heaStops.find(s => s.info.code === stop.stop);
+                if(!hea) return undefined;
+                return { name: stop.name, ...hea }
+              })
+              .filter(s => s !== undefined)
+              .map((stop, index, array) => <ListItem
+              key={stop.info.code}
+              topArrow
+              href={!editMode ? {
+                pathname: "/stop/[stop]",
+                query: { stop: stop.info.code }
+              } : undefined}
+              topEmoji
+              emoji={editMode ? <>
+                <div className={"item-arrow rotate-180 mb-3 " + (index === 0 ? "cursor-not-allowed text-neutral-400 dark:text-neutral-500" : "font-bold cursor-pointer")}
+                  title="Click to move up"
+                  onClick={() => {
+                    const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
+                    const item = newArray.splice(index, 1);
+                    newArray.splice(index - 1, 0, ...item);
+                    setStops(newArray);
                   }}
-                  className="block w-full border-2 rounded-md px-2 text-orange-500 text-center" 
-                  type="text" 
-                  value={stop.name}
-                  placeholder="Change your label for this stop."
-                /> : stop.name === undefined ? <></> : <div className="text-orange-500 text-xl font-bold text-center">{stop.name}</div>}
-                <b>{isRailStation(stop.info.code) ? "Rail Stop" : "Stop"} {stop.info.code} - {stop.info.name}</b><br/>
-                <ListTrips trips={stop.trips}/>
-              </ListItem>)}
-            </tbody>
-          </table>
+                >V</div>
+                <div className={"item-arrow " + (index === array.length - 1 ? "cursor-not-allowed text-neutral-400 dark:text-neutral-500" : "font-bold cursor-pointer")}
+                  title="Click to move down"
+                  onClick={() => {
+                    const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
+                    const item = newArray.splice(index, 1);
+                    newArray.splice(index + 1, 0, ...item);
+                    setStops(newArray);
+                  }}
+                >V</div>
+                <div className={"cursor-pointer"}
+                  title="Click to remove"
+                  onClick={() => {
+                    const newArray = array.map(s => ({ stop: s.info.code, name: s.name }));
+                    newArray.splice(index, 1);
+                    setStops(newArray);
+                  }}
+                >–</div>
+              </>: undefined}
+            >
+              {editMode ? <input 
+                onChange={(evt) => {
+                  const newStops = array.map(s => {
+                    if(s.info.code === stop.info.code) return { stop: s.info.code, name: evt.target.value };
+                    else return { stop: s.info.code, name: s.name };
+                  });
+                  setStops(newStops);
+                }}
+                className="block w-full border-2 rounded-md px-2 text-orange-500 text-center dark:bg-neutral-700 dark:border-neutral-400" 
+                type="text" 
+                value={stop.name}
+                placeholder="Change your label for this stop."
+              /> : stop.name === undefined ? <></> : <div className="text-orange-500 text-xl font-bold text-center">{stop.name}</div>}
+              <b>{isRailStation(stop.info.code) ? "Rail Station" : "Stop"} {stop.info.code} - {stop.info.name}</b><br/>
+              <ListTrips trips={stop.trips}/>
+            </ListItem>)}
+          </GenericTable>
       </> :
       <div>
         You have no favorite stops

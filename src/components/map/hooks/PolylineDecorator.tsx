@@ -17,7 +17,7 @@ import "leaflet-polylinedecorator";
 export default function PolylineDecorator(props: PolylineProps & PolylineDecoratorOptions) {
   const map = useMap();
   const polylineRef = React.createRef<L.Polyline>();
-  const decoratorRef = React.useRef<L.PolylineDecorator>();
+  const decoratorRef = React.useRef<L.PolylineDecorator>(null);
 
   useEffect(() => {
     if(polylineRef.current) {

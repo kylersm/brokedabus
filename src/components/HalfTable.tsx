@@ -1,3 +1,5 @@
+import type { JSX } from "react";
+
 /**
  * Used to convey information of one part/half (e.g. eastbound westbound trips, or am pm stops)
  * 

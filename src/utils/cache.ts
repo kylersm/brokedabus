@@ -7,6 +7,8 @@ import type * as GTFS from "~/lib/GTFSTypes";
 import { BUSAPI } from "~/server/api/routers/hea";
 import { getBlockInfo, YYYYMMDDToTime } from "~/server/api/routers/gtfs";
 import { env } from "~/env";
+import { HST_UTC_OFFSET } from "~/lib/util";
+import { day } from "~/lib/GTFSBinds";
 
 interface Vehicle {
   number: string;
@@ -70,6 +72,32 @@ const getHSTDateFromVehicleMSG = (lastMsg: string) => {
   }
 }
 
+const setExpectedTrip = (trips: GTFS.PolishedBlockTrip[], adherence: number): void => {
+  trips.forEach(t => t.active = false);
+  const time = (Math.floor(Date.now() / 1000) - HST_UTC_OFFSET) % day + (adherence * 60);
+  const timePlusDay = time + day;
+  const containingTrip = trips.find(t => (t.firstArrives <= time && time <= t.lastDeparts) ||
+    (t.firstArrives <= timePlusDay && timePlusDay <= t.lastDeparts));
+  if (containingTrip)
+    containingTrip.active = true;
+  else {
+    let timeToUse = time;
+    const firstTrip = trips[0];
+
+    // if the time 50 minutes ago is still earlier than the first trip, we are currently past a day for the block
+    if((time + 50 * 60) < (firstTrip?.firstArrives ?? 0)) {
+      timeToUse = timePlusDay;
+    }
+
+    const a = trips.reduce((p, c) => {
+      const pTime = (timeToUse) - p.firstArrives;
+      const cTime = (timeToUse) - c.firstArrives;
+      return cTime > 0 && cTime < pTime ? c : p;
+    });
+    a.active = true;
+  }
+}
+
 /**
  * A "turnstile" way of a relatively intense task.
  * 
@@ -89,8 +117,8 @@ export async function fetchVehicles() {
   fetchingVehicles = true;
   const now = Date.now();
   if (lastFetchedVehicles < 0 || now - lastFetchedVehicles > 7.5 * 1000) {
-
     const xml = (await axios.get(`${BUSAPI}vehicle/?key=${env.HEA_KEY}`)).data as string;
+
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
       // select one with higher index
@@ -100,19 +128,27 @@ export async function fetchVehicles() {
       b.last_message.getTime() - a.last_message.getTime()
     );
 
-    for(const nv of newVehicles) {
+    newVehicles.forEach(nv => {
       const v = vehicles[nv.number];
-      const block = v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : nv.trip ? getBlockInfo(GTFS_FEED, nv.trip) : undefined;
+      const block = !nv?.trip || GTFS_FEED.agency.length === 0 ? undefined :
+      // determine if the current trip ID belongs to the cached block, then continue using the cached block
+       v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : 
+      // otherwise get a new block from the new trip ID, or undefined if there is no trip
+        nv.trip ? getBlockInfo(GTFS_FEED, nv.trip) : undefined;
       const adherence = // set adherence to whatever comes in, if not previously specified.
         (!v || isNaN(v.adherence) || lastFetchedVehicles < 0) ? nv.adherence 
         // otherwise, set it to the avg of the two
-        : ((v.adherence + nv.adherence) / 2)
+        : ((v.adherence + nv.adherence) / 2);
+
+      if(block)
+        setExpectedTrip(block?.trips, adherence);
+
       vehicles[nv.number] = {
         ...nv, 
         block,
         adherence
       };
-    }
+    });
     lastFetchedVehicles = now;
   }
   fetchingVehicles = false;
@@ -123,6 +159,12 @@ const GTFS_FEED_URL   = "https://www.thebus.org/transitdata/production/google_tr
 const GTFS_KEYS: (keyof typeof GTFS_FEED)[] = ["agency", "calendar", "calendar_dates", "feed_info", "routes", "shapes", "stop_times", "stops", "trips"];
 
 let    GTFS_LAST_MOD = 0;
+interface StopTimeForBlock {
+  start?: string;
+  stop?: string;
+  minSeq?: number;
+  maxSeq?: number;
+}
 export interface GTFSFeed {
   agency: GTFS.Agency[];
   calendar: GTFS.Calendar[];
@@ -131,6 +173,8 @@ export interface GTFSFeed {
   routes: GTFS.Route[];
   shapes: GTFS.Shape[];
   stop_times: GTFS.StopTimes[];
+  // used in getBlockInfo
+  beg_end_stop_times: Record<string, StopTimeForBlock>;
   stops: GTFS.Stop[];
   trips: GTFS.Trip[];
 }
@@ -142,6 +186,7 @@ const GTFS_FEED: GTFSFeed = {
   routes: [],
   shapes: [],
   stop_times: [],
+  beg_end_stop_times: {},
   stops: [],
   trips: []
 };
@@ -152,7 +197,7 @@ export async function getGTFS() {
   if (fetchingGTFS) return GTFS_FEED;
   fetchingGTFS = true;
   const now = Date.now();
-  if (lastFetchedGTFS < 0 || (GTFS_FEED.feed_info[0] && YYYYMMDDToTime(GTFS_FEED.feed_info[0].feed_end_date, true) <= now)) {
+  if (lastFetchedGTFS < 0 || (GTFS_FEED.feed_info[0] && (YYYYMMDDToTime(GTFS_FEED.feed_info[0].feed_end_date, true) + 10 * 60 * 60 * 1000) <= now)) {
     const feedReq = (await axios.get<Buffer>(GTFS_FEED_URL, { responseType: "arraybuffer" }));
     const head = Date.parse(feedReq.headers["last-modified"] as string);
 
@@ -174,6 +219,27 @@ export async function getGTFS() {
       (GTFS_FEED[key] as unknown[]) = Papa.parse<unknown>(info, { header: true, skipEmptyLines: true }).data;
     }
 
+    // go through whole array to build indices of start and end points
+    for(const st of GTFS_FEED.stop_times) {
+      const sequences = parseInt(st.stop_sequence);
+      // get existing entry or make a new one if it doesn't exist
+      let entry: StopTimeForBlock | undefined = GTFS_FEED.beg_end_stop_times[st.trip_id];
+      if(!entry)
+        entry = GTFS_FEED.beg_end_stop_times[st.trip_id] = { 
+          start: st.arrival_time, 
+          stop: st.departure_time, 
+          minSeq: sequences,
+          maxSeq: sequences 
+        };
+      // find the first and last sequences, then assign appropriate times
+      if(sequences < (entry.minSeq ?? 2)) {
+        entry.start = st.arrival_time;
+        entry.minSeq = sequences;
+      } if(sequences > (entry.maxSeq ?? 0)) {
+        entry.stop = st.departure_time;
+        entry.maxSeq = sequences;
+      }
+    }
     console.log("GTFS feed received at", new Date());
     lastFetchedGTFS = now;
   }

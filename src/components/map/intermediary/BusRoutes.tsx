@@ -1,12 +1,12 @@
 import type { LatLngBoundsExpression, LatLngTuple, Map } from "leaflet";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { PolishedRoute } from "~/lib/GTFSTypes";
 import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, isUnfocused, StopArrival, DirectionKey, LastUpdated } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import { getHSTTime } from "~/lib/util";
-import { getExpectedTripFromBC } from "~/lib/GTFSBinds";
+import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 
 
 /**
@@ -28,13 +28,10 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
   const { route } = props;
   const Map = useMap();
 
-  const { data: heaVehicles } = api.hea.getVehicles.useQuery({ route: route.code }, {
-    refetchInterval: 7500
+  const { data: vehicles } = api.hea.getVehicles.useQuery({ route: route.code }, {
+    refetchInterval: 7500,
+    select: createPostRqVehicles
   });
-
-  const vehicles = heaVehicles?.map(v => ({
-    ...v, tripInfo: getExpectedTripFromBC(v.block, v.trip, v.adherence)
-  }))
 
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
 
@@ -51,7 +48,7 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
     .filter(t => Array.isArray(t))
     .flat(1)
   }, {
-    enabled: !!heaVehicles?.length
+    enabled: !!vehicles?.length
   });
 
   const [dir, setDir] = useState<number>();
@@ -73,9 +70,9 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
     }
   }, [map, allShapes, zoomed]);
 
-  const now = useRef<number>(getHSTTime());
+  const [now, setNow] = useState<number>(getHSTTime());
   useEffect(() => {
-    const interval = setInterval(() => now.current = getHSTTime(), 1000);
+    const interval = setInterval(() => setNow(getHSTTime()), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -89,7 +86,12 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
       direction: (s.direction === 1 ? 'East' : 'West'),
       routePath: s
     }))}
-    vehicles={vehicles}
+    vehicles={vehicles?.map(v => {
+      const info = v.tripInfo?.trips;
+      return { ...v, nextStop: getExpectedStop(
+        allStops?.filter(s => s.trips.some(t => info?.includes(t._id))).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
+      };
+    })}
     vehicleHook={setOpenVehicles}
     refHook={setMap}
     wipeBus={(v) => v.tripInfo?.routeId !== route._id}
@@ -100,12 +102,12 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
         stop={s.stop}
         trips={[]}
       >
-        {s.trips.sort((a, b) => a.arrives - b.arrives).filter(t => (t.arrives - now.current) > -120).map(t => {
+        {s.trips.sort((a, b) => a.arrives - b.arrives).filter(t => (t.arrives - now) > -120).map(t => {
           const vehicle = vehicles?.find(v => v.tripInfo?.trips.includes(t._id));
           return <StopArrival
             key={s.stop._id + t._id}
             vehicle={vehicle?.number}
-            arrives={t.arrives - now.current - 60 * (vehicle?.adherence ?? 0)} />;
+            arrives={t.arrives - getVehicleNow(vehicle, now)} />;
         })}
       </StopPopup>
     }))} />;
