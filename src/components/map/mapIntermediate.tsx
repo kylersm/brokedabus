@@ -1,7 +1,8 @@
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useContext, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { getHSTTime, HST_UTC_OFFSET, HSTify, quantifyTimeShortened } from "~/lib/util";
 import Spinner from "../Spinner";
+import ThemeContext from "~/context/ThemeContext";
 
 // list of utilities for map-related purposes
 
@@ -21,6 +22,7 @@ export const isUnfocused = (openTrips: string[], shid: string, activeShapes?: st
 
 // user can click on directions to filter routes going in the direction if set state is provided
 export const DirectionKey = (props: { directionHook?: Dispatch<SetStateAction<number|undefined>> }) => {
+  const darkTheme = useContext(ThemeContext)?.[0];
   const [direction, setDirection] = useState<number>();
   // undefined none, 0 west, 1 east
   const onClickDirection = (value: number) => {
@@ -32,10 +34,10 @@ export const DirectionKey = (props: { directionHook?: Dispatch<SetStateAction<nu
   };
 
   return <p>Route Direction: <span 
-    style={{ color: direction === undefined || direction === 0 ? "#00f" : "#999"}} 
+    style={{ color: direction === undefined || direction === 0 ? darkTheme ? "#3af" : "#00f" : "#999"}} 
     onClick={() => onClickDirection(0)}
   >← Westbound</span>, <span
-    style={{ color: direction === undefined || direction === 1 ? "#f00" : "#999"}} 
+    style={{ color: direction === undefined || direction === 1 ? darkTheme ? "#f44" : "#f00" : "#999"}} 
     onClick={() => onClickDirection(1)}
   >Eastbound →</span><br/></p>;
 }

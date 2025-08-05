@@ -6,7 +6,7 @@ export default function GenericTable(props: PropsWithChildren & { title?: string
     <table className={`md:px-4 ${!props.noCenter ? 'mx-auto' : ''} text-left ${!props.noGap ? 'border-spacing-y-5' : 'border-spacing-y-[0.03125rem]'} border-separate`}>
       <tbody className={
         !props.noSmallSeparators ? 
-          "[&_tr:not(:last-child)>td]:border-b-2 [&_td]:pb-4 border-b-gray-500 [&_tr:not(:last-child)>td]:md:border-b-0 [&_td]:md:pb-0" : 
+          "[&_tr:not(:last-child)>td]:border-b-2 [&_td]:pb-4 border-b-neutral-500 dark:border-b-neutral-100 [&_tr:not(:last-child)>td]:md:border-b-0 [&_td]:md:pb-0" : 
           "[&_td]:!pb-0 [&_td]:!border-b-0"
       }>
         {props.children}

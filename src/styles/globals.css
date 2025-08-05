@@ -14,6 +14,10 @@
   --text: white;
 }
 
+label input[type=radio] {
+  @apply mr-1
+}
+
 .link {
   @apply text-blue-500 underline cursor-pointer
 }
@@ -44,7 +48,7 @@
 }
 
 .dark .shadow-btn {
-  @apply shadow-lg shadow-[#ccccccaa] divide-opacity-50
+  @apply shadow-lg shadow-[rgba(0,0,0,50)] divide-opacity-50
 }
 
 html {

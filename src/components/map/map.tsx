@@ -118,7 +118,7 @@ export default function Map(props: {
       for(const vehicle of vehicles) {
         if(sig.aborted) return;
         const ref = vehicleCache.current[vehicle.number];
-        const icon = GenerateBusSVG(vehicle.number, vehicle.tripInfo?.direction, vehicle.tripInfo?.routeCode);
+        const icon = GenerateBusSVG(vehicle.number, darkTheme, vehicle.tripInfo?.direction, vehicle.tripInfo?.routeCode);
         if(ref) {
           vehicleCache.current[vehicle.number] = {
             ...ref,
@@ -152,7 +152,7 @@ export default function Map(props: {
   const [zoomLvl, setZoom] = useState<number>(zoom ?? 11);
 
   return (<div className="w-auto flex-col flex overflow-hidden">
-    {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 dark:bg-black dark:bg-opacity-60 w-full'>
+    {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-60 w-full'>
       <div className='w-full'>{header}</div>
     </div>}
     <div className="left-1/2 -translate-x-1/2 fixed flex z-10 bottom-20">
@@ -316,7 +316,9 @@ export default function Map(props: {
       { /* Insert path */ }
       {routePath ? 
         routePath.map((s) => {
-          const color = s.unfocused ? '#999999' : s.direction === 'East' ? "#ff0000" : "#0000ff";
+          const color = s.unfocused ? '#999999' : 
+            s.direction === 'East' ? darkTheme ? "#f44" : "#f00" : 
+                                     darkTheme ? "#3af" : "#00f";
           return <PolylineDecorator
             key={s.routePath.shapeId}
             pathOptions={{ fillOpacity: 1, color, weight: 2 }}
@@ -363,14 +365,18 @@ export default function Map(props: {
   </div>);
 }
 
-function GenerateBusSVG(vehicle: string, direction?: number, route?: string): string {
-  const color = route ? brightenColor(getColorFromRoute({ code: route }), 0x111111) : "#ffffff";
-  const text = route ? getContrastFromRoute({ code: route }) : '#000000';
-  return "data:image/svg+xml," + encodeURIComponent(renderToStaticMarkup(<svg height={50} width={50} xmlns="http://www.w3.org/2000/svg">
-    <rect width={50} height={25} fill={route ? '#dc9' : '#fff'} stroke={'#000'} strokeWidth={2}/>
-    <rect y={25} width={50} height={25} fill={color} stroke={'#000'} strokeWidth={2}/>
+function GenerateBusSVG(vehicle: string, dark?: boolean, direction?: number, route?: string): string {
+  const color = route ? brightenColor(getColorFromRoute({ code: route }), 0x111111) : dark ? '#555' : "#fff";
+  const vehicleFill = route ? dark ? '#a96' : '#dc9' :
+               /* no route */ dark ? '#555' : '#fff';
+  const text = route ? dark ? '#fff' : getContrastFromRoute({ code: route }) : 
+        /* no route */ dark ? '#fff' : '#000';
 
-    <text x={25} y={25/2+5.5} textAnchor='middle' fontFamily="Verdana" fill={'#000'}>{vehicle}</text>
+  return "data:image/svg+xml," + encodeURIComponent(renderToStaticMarkup(<svg height={50} width={50} xmlns="http://www.w3.org/2000/svg">
+    <rect width={50} height={25} fill={vehicleFill} stroke={dark ? '#fff' : '#000'} strokeWidth={2}/>
+    <rect y={25} width={50} height={25} fill={color} stroke={dark ? '#fff' : '#000'} strokeWidth={2}/>
+
+    <text x={25} y={25/2+5.5} textAnchor='middle' fontFamily="Verdana" fill={dark ? '#fff' : '#000'}>{vehicle}</text>
     <text x={25} y={25/2+25+5.5} textAnchor='middle' fill={text} fontFamily="Verdana">
       {direction === 0 && '«'}{route}{direction === 1 && '»'}
     </text>
