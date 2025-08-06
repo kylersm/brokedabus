@@ -794,20 +794,6 @@ export const GTFSRouter = createTRPCRouter({
     
       return numbers;
     }),
-  getTripInfos: publicProcedure
-    .input(z.array(z.string()))
-    .query(async ({ input }): Promise<Record<string, GTFS.PolishedBlockTrip>> => {
-      const feed = await getGTFS();
-      const trips = [...new Set(input)];
-      const obj: Record<string, GTFS.PolishedBlockTrip> = {};
-      for(const t of trips) {
-        const trip = getTrip(feed, t);
-        if(!trip) continue;
-        obj[t] = { ...trip, firstArrives: 0, lastDeparts: 48 * 60 * 60 };
-      }
-      // return trips.map(t => getTrip(feed, t)).filter((t): t is Types.IdentifiableTrip => t !== undefined);
-      return obj;
-    }),
   getCalendarInfo: publicProcedure
     .input(z.object({ stopId: z.string(), date: z.date() }))
     .query(async ({ input }): Promise<UnifiedCalendarInfo[]> => {
