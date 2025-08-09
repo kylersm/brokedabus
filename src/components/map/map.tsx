@@ -21,7 +21,7 @@ import PolylineDecorator from "~/components/map/hooks/PolylineDecorator";
 import ThemeContext from '~/context/ThemeContext';
 import { Theme } from '~/lib/prefs';
 
-const activeMapBtn = "bg-slate-200 dark:bg-slate-700 rounded-md shadow-sm";
+export const activeMapBtn = "bg-slate-200 dark:bg-slate-700";
 
 export interface SuperficialVehicle extends PostRqVehicle {
   arrivalInfo?: PolishedArrival[];
@@ -157,13 +157,13 @@ export default function Map(props: {
     </div>}
     <div className="left-1/2 -translate-x-1/2 fixed flex z-10 bottom-20">
       <div className="mx-auto p-1.5 bg-white dark:bg-gray-500 rounded-xl flex shadow-btn">
-        <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(0)}>
+        <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2 map-btn`} onClick={() => setMapMode(0)}>
           Map
         </div>
-        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 border-slate-200 dark:border-gray-400 ${mapMode === 0 ? 'border-r-2' : mapMode === 2 ? 'border-l-2' : 'border-x-2'}`} onClick={() => setMapMode(1)}>
+        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 map-btn border-slate-200 dark:border-gray-400 ${mapMode === 0 ? 'border-r-2 !rounded-r-none' : mapMode === 2 ? 'border-l-2 !rounded-l-none' : 'border-x-0'}`} onClick={() => setMapMode(1)}>
           Hybrid
         </div>
-        <div className={`${mapMode === 2 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(2)}>
+        <div className={`${mapMode === 2 ? activeMapBtn : ''} py-1 px-2 map-btn`} onClick={() => setMapMode(2)}>
           Terrain
         </div>
       </div>
@@ -316,7 +316,7 @@ export default function Map(props: {
       { /* Insert path */ }
       {routePath ? 
         routePath.map((s) => {
-          const color = s.unfocused ? '#999999' : 
+          const color = s.unfocused ? '#999' : 
             s.direction === 'East' ? darkTheme ? "#f44" : "#f00" : 
                                      darkTheme ? "#3af" : "#00f";
           return <PolylineDecorator

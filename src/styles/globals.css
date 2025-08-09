@@ -2,14 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: white;
   --text: black;
+
+  background: var(--background);
+  color: var(--text);
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-#top.dark {
+:root.dark {
   --background: #232323;
   --text: white;
 }
@@ -44,20 +47,23 @@ label input[type=radio] {
 }
 
 .shadow-btn {
-  @apply shadow-lg;
+  @apply shadow-lg
 }
 
 .dark .shadow-btn {
   @apply shadow-lg shadow-[rgba(0,0,0,50)] divide-opacity-50
 }
 
-html {
-  overflow: hidden;
+.map-btn {
+  @apply rounded-md active:bg-slate-200
 }
 
-#top {
-  background: var(--background);
-  color: var(--text);
+.dark .map-btn {
+  @apply active:bg-slate-600
+}
+
+html {
+  overflow: hidden;
 }
 
 line.item-arrow {

@@ -1,12 +1,14 @@
 import Image from "next/image";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import PadPage from "~/components/templates/PadPage";
 import ThemeContext from "~/context/ThemeContext";
-import { setTheme, Theme } from "~/lib/prefs";
+import { getTheme, Theme } from "~/lib/prefs";
 
 export default function Home() {
   const [showNudge, setSN] = useState<boolean>();
   const themeState = useContext(ThemeContext);
+  const [lsTheme, setLSTheme] = useState<Theme>();
+  useEffect(() => setLSTheme(getTheme()), []);
 
   return <>
     <div 
@@ -29,14 +31,14 @@ export default function Home() {
           Need to change your theme?: <form 
             className="flex space-x-6"
             onChange={(e) => {
-              const newTheme = (e.target as HTMLInputElement).value as Theme;
-              themeState?.[1](newTheme);
-              setTheme(newTheme);
+              const thm = (e.target as HTMLInputElement).value as Theme;
+              setLSTheme(thm);
+              themeState?.[1](thm);
             }}
           >
-            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.AUTO} value={Theme.AUTO}/>Auto</label>
-            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.DARK} value={Theme.DARK}/>Dark</label>
-            <label><input type="radio" name="theme" defaultChecked={themeState?.[0] === Theme.LIGHT} value={Theme.LIGHT}/>Light</label>
+            <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.AUTO} value={Theme.AUTO}/>Auto</label>
+            <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.DARK} value={Theme.DARK}/>Dark</label>
+            <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.LIGHT} value={Theme.LIGHT}/>Light</label>
           </form>
 
           Features this app offers:<br/>
