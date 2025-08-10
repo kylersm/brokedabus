@@ -186,8 +186,9 @@ function VehicleListEntry(props: { vehicle: TripVehicle }) {
     <td className="hidden lg:table-cell px-2 text-center">{vehicle.driver ? vehicle.driver : <i>-</i>}</td>
     <td className={"px-2 font-mono " + (!onSchedule ? vehicle.adherence > 0 ? "text-green-500" : "text-red-500" : '')}>
       <span className="hidden md:block">{schedule}</span>
-      <span className="block md:hidden">{minifySchedule}</span>
+      <span className="block md:hidden text-center">{minifySchedule}</span>
     </td>
-    <td className="hidden lg:table-cell px-2">{HSTify(vehicle.last_message)}</td><td className="table-cell lg:hidden px-2 font-mono">{HSTify(vehicle.last_message, true)}</td>
+      <td className="hidden lg:table-cell px-2">{HSTify(vehicle.last_message)}</td>
+      <td className="table-cell lg:hidden px-2 text-center font-mono">{HSTify(vehicle.last_message, true)}</td>
   </tr>;
 }
