@@ -17,6 +17,7 @@ import { getExpectedTrip } from '~/lib/GTFSBinds';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import GenericTable from '~/components/GenericTable';
+import RemoveUnderline from '~/components/RemoveUnderline';
 
 const staleColor = '#999999';
 const isArrivalFresh = (arrived: number) => arrived + 65 >= 0;
@@ -91,11 +92,11 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/shape/[shape]",
         query: { shape: tripInfo?.shapeId }
-      }}>See subroute <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> stops</Link>
+      }}>See subroute<RemoveUnderline> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> </RemoveUnderline>stops</Link>
       <Link className={`link ${tripInfo ? "inline-block" : "hidden"}`} href={{
         pathname: "/route/[route]",
         query: { route: tripInfo?.routeCode }
-      }}>See route <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> info</Link>
+      }}>See route<RemoveUnderline> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> </RemoveUnderline>info</Link>
     </div>
 
     {vehicleInfo && stops && <>
