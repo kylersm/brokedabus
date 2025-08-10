@@ -29,12 +29,12 @@ const getArrivals = async(stop: string): Promise<Types.PolishedArrivalsContainer
     const vehicle: Types.PostRqVehicle | undefined = arrival.vehicle !== "???" ? vehicles.find(v => v.number === arrival.vehicle) : 
     /**
      * code to search vehicle for trips ourselves: 
-     * vehicles.filter(v => v.block).find(v => v.block?.trips.some(t => t.trip === a.trip)) 
-     */ undefined;
+     * vehicles.filter(v => v.block).find(v => v.block?.trips.some(t => t.trips.includes(arrival.trip)));
+    //*/ undefined;
     if(vehicle) vehicle.tripInfo = getExpectedTrip(vehicle.block);
 
     const polishedArrival = GTFS.toPolishedArrival(feed, stop, arrival, vehicle);
-    let foundArrival;
+    let foundArrival; 
     if(vehicle && (foundArrival = containerArr.find(c => c.vehicle?.number === vehicle.number)))
       foundArrival.arrivals.push(polishedArrival);
     else 
@@ -45,15 +45,6 @@ const getArrivals = async(stop: string): Promise<Types.PolishedArrivalsContainer
   }
 
   return containerArr;
-
-  /* return arrivals.map(a => GTFS.toPolishedArrival(feed, stop, a, a.vehicle !== "???" ? vehicles.find(v => v.number === a.vehicle || v.block?.trips.some(t => t.trips.includes(a.trip))) ?? { 
-    adherence: 0,
-    last_message: new Date(0),
-    lat: parseFloat(a.latitude),
-    lon: parseFloat(a.longitude),
-    number: a.vehicle,
-    trip: a.trip
-  } : undefined)).filter(s => s !== undefined) */
 };
 
 const filterVehicles = (v: Types.PolishedVehicle, route?: string, lastActive?: number) => 

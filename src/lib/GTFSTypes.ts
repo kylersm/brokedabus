@@ -80,7 +80,6 @@ export interface Shape {
 }
 
 export interface PolishedShape {
-  _id: string;
   lat: number;
   lon: number;
   sequence: number;
@@ -94,7 +93,6 @@ export interface PolishedShapeContainer {
 }
 
 export const makePolishedShape = (s: Shape): PolishedShape => ({
-  _id: s.shape_id,
   lat: parseFloat(s.shape_pt_lat),
   lon: parseFloat(s.shape_pt_lon),
   sequence: parseInt(s.shape_pt_sequence)
@@ -114,7 +112,8 @@ export interface StopTimes {
 	stop_code: string;
 }
 
-export const makePolishedStopTime = (st: StopTimes) => ({
+// not used?
+/* export const makePolishedStopTime = (st: StopTimes) => ({
   trip: st.trip_id,
   arrives: st.arrival_time,
   departs: st.departure_time,
@@ -122,7 +121,7 @@ export const makePolishedStopTime = (st: StopTimes) => ({
   stopCode: st.stop_code,
   sequence: st.stop_sequence,
   distanceTraveled: parseFloat(st.shape_dist_traveled)
-});
+}); */
 
 export interface Stop {
   stop_id: string;
@@ -138,14 +137,12 @@ export interface Stop {
 	stop_serial_number: string;
 }
 
-export const makePolishedStop = (s: Stop) => ({
+export const makePolishedStop = (s: Stop): Types.PolishedStop => ({
   _id: s.stop_id,
   code: s.stop_code,
   name: s.stop_name,
   lat: parseFloat(s.stop_lat),
-  lon: parseFloat(s.stop_lon),
-  url: s.stop_url,
-  serial: s.stop_serial_number
+  lon: parseFloat(s.stop_lon)
 });
 
 export interface Trip {

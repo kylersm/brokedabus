@@ -27,4 +27,14 @@ export const getNextTripLayover = (block?: GTFS.BlockContainer, trip?: GTFS.Poli
   const nextTrip = block.trips.find((_, i) => block.trips.findIndex(t => areArraysSimilar(trip.trips, t.trips)) + 1 === i);
   if(!nextTrip) return { start: trip.firstArrives, end: trip.lastDeparts };
   return { start: trip.firstArrives, end: trip.lastDeparts, next: nextTrip };
-}
+};
+
+export const closestPoint = (shapes: GTFS.PolishedShape[], point: [number, number]): GTFS.PolishedShape => {
+  const closestAfter = shapes.reduce((b, curr, i) => {
+    const best = shapes[b]!;
+    const havBest = haversine([best.lat, best.lon], point);
+    const havCurr = haversine([curr.lat, curr.lon], point);
+    return havCurr < havBest ? i : b;
+  }, 0);
+  return shapes[Math.min(closestAfter, shapes.length - 1)]!;
+};

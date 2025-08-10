@@ -8,6 +8,7 @@ import { decode } from "html-entities";
 import { TRPCError } from "@trpc/server";
 import { type ShapesWithStops, type UnifiedCalendarInfo } from "~/lib/GTFSTypes";
 import { getGTFS, type GTFSFeed } from "~/utils/cache";
+import { closestPoint } from "~/lib/GTFSBinds";
 
 const getShape = (feed: GTFSFeed, shapeID: string): GTFS.PolishedShape[] => {
   const shapes = feed.shapes.filter(s => s.shape_id === shapeID);
@@ -95,8 +96,12 @@ const getStopHeadsignsForDate = (feed: GTFSFeed, stop: string, date=new Date(Dat
 
 const getStopHeadsigns = (feed: GTFSFeed, stop: string): Types.SuperficialTrip[] => {
   const stopTimes = feed.stop_times.filter(st => st.stop_code === stop);
-  const trips = feed.trips.filter(t => stopTimes.map(st => st.trip_id).includes(t.trip_id));
-  const routes = feed.routes.filter(r => trips.map(t => t.route_id).includes(r.route_id));
+
+  const tripIds = stopTimes.map(st => st.trip_id);
+  const trips = feed.trips.filter(t => tripIds.includes(t.trip_id));
+
+  const routeIds = trips.map(t => t.route_id);
+  const routes = feed.routes.filter(r => routeIds.includes(r.route_id));
   
   const headsignTrip: Types.SuperficialTrip[] = [];
   for(const trip of trips) {
@@ -108,7 +113,6 @@ const getStopHeadsigns = (feed: GTFSFeed, stop: string): Types.SuperficialTrip[]
       routeCode: routeCode,
       headsign: trip.trip_headsign,
       displayCode: trip.display_code,
-      // direction: parseInt(trip.direction_id) ?? -1
     })
   }
 
@@ -194,8 +198,9 @@ export const YYYYMMDDToTime = (time: string, byMidnight?: boolean): number => {
 const getRouteHeadsigns = (feed: GTFSFeed, routeId: string): Types.PolishedHEARoute[] | undefined => {
   const trips = feed.trips.filter(t => t.route_id === routeId)
     .filter((t, i, a) => a.findIndex(t2 => t.trip_headsign === t2.trip_headsign && t.shape_id === t2.shape_id) === i);
+  const tripIds = trips.map(t => t.trip_id);
 
-  const firstStops = feed.stop_times.filter(st => trips.map(t => t.trip_id).includes(st.trip_id) && st.stop_sequence === "1");
+  const firstStops = feed.stop_times.filter(st => tripIds.includes(st.trip_id) && st.stop_sequence === "1");
   const routes: Types.PolishedHEARoute[] = [];
   for(const trip of trips) {
     const st = firstStops.find(st => st.trip_id === trip.trip_id);
@@ -231,33 +236,16 @@ const getRouteWithShapesByID = (feed: GTFSFeed, routeId: string): Types.Polished
 }
 
 // internal
-const closestPoint = (shapes: GTFS.PolishedShape[], point: [number, number]): GTFS.PolishedShape => {
-  return shapes.reduce((best, curr) => {
-    const havBest = haversine([best.lat, best.lon], point);
-    const havCurr = haversine([curr.lat, curr.lon], point);
-    return havCurr < havBest ? curr : best;
-  });
-};
-
-// internal
 const calculateDistance = (shapes: GTFS.PolishedShape[]): number => {
   return shapes.reduce((dist, curr, index) => 
     index < 1 ? 0 : (dist + haversine([curr.lat, curr.lon], [shapes[index-1]!.lat, shapes[index-1]!.lon])),
   0);
 }
 
-const getDistWithFutureTripToPoint = (
-  feed: GTFSFeed, 
-  location: [number, number],
-  destination: [number, number],
-  currentShape: string | undefined,
-  futureShape: string,
-) => {
-  let currentTripToEnd = 0;
-  if (currentShape !== undefined && currentShape !== futureShape)
-    currentTripToEnd = getDistToEnd(feed, location, currentShape);
-
-  return currentTripToEnd + getDistToNearestShapeToPoint(feed, location, destination, futureShape);
+const calculateFullShapeDistance = (feed: GTFSFeed, shid: string): number => {
+  const shapes = getShape(feed, shid);
+  if(!shapes.length) return 0;
+  return calculateDistance(shapes);
 }
 
 // internal
@@ -296,11 +284,23 @@ const getDistToNearestShapeToPoint = (
          ));
 };
 
-export const toPolishedArrival = (feed: GTFSFeed, stop: string, arrival: Types.HEA_Arrival, vehicle?: Types.TripVehicle): Types.PolishedArrival => {
-  // needs to be
+const getDistToPointFromStart = (
+  feed: GTFSFeed, 
+  target: [number, number], 
+  shid: string
+): number => {
+  const shape = getShape(feed, shid);
+  if (!shape.length) return 0;
+
+  const closestTar = closestPoint(shape, target);
+
+  return haversine([closestTar.lat, closestTar.lon], target) +
+         calculateDistance(shape.filter(s => s.sequence <= closestTar.sequence));
+};
+
+export const toPolishedArrival = (feed: GTFSFeed, stop: string, arrival: Types.HEA_Arrival, vehicle?: Types.PostRqVehicle): Types.PolishedArrival => {
   const departing = isStopStartingPoint(feed, stop, arrival.trip);
   const stopInfo = getStopByCode(feed, stop);
-  const tripVehicle: Types.TripVehicle | undefined = vehicle;
   const date = arrival.date.split('/').map(x => parseInt(x));
   const isNoon = arrival.stopTime.endsWith("PM");
   const time = arrival.stopTime.slice(0, -3).split(":").map(x => parseInt(x));
@@ -323,37 +323,45 @@ export const toPolishedArrival = (feed: GTFSFeed, stop: string, arrival: Types.H
     trips: [arrival.trip]
   };
 
+  let distance = 0;
+  if(stopInfo && vehicle) {
+    // if vehicle isn't assigned a block yet or current trip is the arrival, use the distance from the vehicle along the shape until the stop
+    if (!vehicle?.tripInfo || areArraysSimilar(arrivalTrip.trips, vehicle?.tripInfo?.trips))
+      distance = getDistToNearestShapeToPoint(feed, [vehicle.lat, vehicle.lon], [stopInfo.lat, stopInfo.lon], arrivalTrip.shapeId);
+    else {
+      const thisTripIndex = vehicle.block?.trips.findIndex(t => areArraysSimilar(t.trips, vehicle.tripInfo?.trips)) ?? -1;
+      const arrivalTripIndex = vehicle.block?.trips.findIndex(t => areArraysSimilar(t.trips, arrivalTrip.trips)) ?? -1;
+      // otherwise the vehicle either has a different block that isn't containing the arrival trip
+      // or the this is the block, but not the right trip (future trip)
+      // this means the vehicle has to travel to the end of the trip it's currently running...
+      // ...and then have to start the arrival trip from the beginning of the shape.
+      // The assumption is made that the bus doesn't need to drive to a different terminus when on layover.
+      // So, distance that would not accounted for is the distance between the last point on the vehicle's current shape
+      //     and the starting point of the arrival shape.
+      // You would "notice" if a bus changed trips from route 1 to 6, but not so much if it were route 7 (east) to 7 (west)
+
+      // so, the distance will ALWAYS be greater than or equal to the distance from the start of the arrival shape to the stop
+      distance = getDistToPointFromStart(feed, [stopInfo.lat, stopInfo.lon], arrivalTrip.shapeId);
+      if(thisTripIndex > -1) {
+        // must calculate distance to end of current trip
+        distance += getDistToEnd(feed, [vehicle.lat, vehicle.lon], vehicle.tripInfo.shapeId);
+        for(let i = thisTripIndex + 1; i < arrivalTripIndex; i++) {
+          distance += calculateFullShapeDistance(feed, vehicle.block!.trips[i]!.shapeId);
+        }
+      }
+    }
+  }
+
   return {
     trip: arrivalTrip,
     departing,
-    distance: stopInfo && tripVehicle ? 
-      getDistWithFutureTripToPoint(feed, [tripVehicle.lat, tripVehicle.lon], [stopInfo.lat, stopInfo.lon], tripVehicle.tripInfo?.shapeId, arrivalTrip.shapeId) : 0,
+    distance,
     estimated: switchEstimated(parseInt(arrival.estimated)),
     status: switchCanceled(parseInt(arrival.canceled)),
     id: arrival.id,
     stopTime
   };
 };
-
-/* const getTrip = (feed: GTFSFeed, tripId: string): GTFS.PolishedBlockTrip | undefined => {
-  const trip = feed.trips.find(t => t.trip_id === tripId);
-  if(!trip) return undefined;
-  const route = feed.routes.find(r => r.route_id === trip.route_id);
-  if(!route) return undefined;
-  return {
-      trips: [trip.trip_id],
-      shapeId: trip.shape_id,
-      displayCode: trip.display_code,
-
-      routeCode: route.route_short_name,
-      direction: parseInt(trip.direction_id) ?? -1,
-      headsign: trip.trip_headsign,
-      routeId: route.route_id,
-
-      firstArrives: 0, 
-      lastDeparts: 0
-    };
-} */
 
 export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContainer | undefined => {
   const trip = feed.trips.find(t => t.trip_id === tripId);

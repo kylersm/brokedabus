@@ -99,6 +99,7 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
         {arrivals
           .flatMap(a => a.arrivals.map(ar => ({ arrival: ar, vehicle: a.vehicle })))
           .filter(a => !routeFilter || a.arrival.trip.routeCode === routeFilter)
+          .sort((a, b) => a.arrival.stopTime.getTime() - b.arrival.stopTime.getTime())
           .map(a => <RTAEntry key={a.arrival.id} arrival={a.arrival} vehicle={a.vehicle} stop={routesServed.info} now={now}/>)
         }
       </GenericTable> : 
