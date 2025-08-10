@@ -2,7 +2,7 @@ import * as GTFS from "~/lib/GTFSTypes";
 import type * as Types from "~/lib/types";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { haversine, HST_UTC_OFFSET, switchCanceled, switchEstimated, timeFromHNLString } from "~/lib/util";
+import { areArraysSimilar, haversine, HST_UTC_OFFSET, switchCanceled, switchEstimated, timeFromHNLString } from "~/lib/util";
 import { type SuperficialRoute } from "~/components/Route";
 import { decode } from "html-entities";
 import { TRPCError } from "@trpc/server";
@@ -126,8 +126,12 @@ const getStopWithHeadsigns = (feed: GTFSFeed, code: string, date?: Date): Types.
 
 const getStopsByShID = (feed: GTFSFeed, shid: string): Types.PolishedStop[] => {
   const trips = feed.trips.filter(t => t.shape_id === shid);
-  const stopTimes = feed.stop_times.filter(st => trips.map(t => t.trip_id).includes(st.trip_id));
-  const stops = feed.stops.filter(s => stopTimes.map(st => st.stop_id).includes(s.stop_id));
+  const tripIds = trips.map(t => t.trip_id);
+
+  const stopTimes = feed.stop_times.filter(st => tripIds.includes(st.trip_id));
+  const stopIds = stopTimes.map(st => st.stop_id);
+
+  const stops = feed.stops.filter(s => stopIds.includes(s.stop_id));
 
   return stops.map(GTFS.makePolishedStop);
 }

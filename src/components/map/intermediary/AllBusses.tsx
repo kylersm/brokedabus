@@ -4,7 +4,7 @@ import { useMap, StopArrival } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import { ActiveType, SortType, type VehicleFiltering } from "../../Vehicles";
 import { filterVehicles } from "~/lib/BusTypes";
-import { getHSTTime } from "~/lib/util";
+import { areArraysSimilar, getHSTTime } from "~/lib/util";
 import VehicleFilterOptions from "../../VehicleFilterOptions";
 import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 
@@ -86,7 +86,7 @@ export function AllBusses() {
       vehicles={filteredVehicles?.map(v => {
         const info = v.tripInfo?.trips;
         return { ...v, nextStop: getExpectedStop(
-          allStops?.filter(s => s.trips.some(t => info?.includes(t._id))).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
+          allStops?.filter(s => areArraysSimilar(s.trips.map(t => t._id), info)).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
         };
       })}
       vehicleHook={setOpenVehicles}

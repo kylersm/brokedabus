@@ -1,5 +1,5 @@
 import RouteChip from "../../Route";
-import { arrivalString, getHSTTime, HST_UTC_OFFSET, HSTify, quantifyMiles, quantifyTime } from "~/lib/util";
+import { areArraysSimilar, arrivalString, getHSTTime, HST_UTC_OFFSET, HSTify, quantifyMiles, quantifyTime } from "~/lib/util";
 import { busInfoToShortString, getVehicleInformation } from "~/lib/BusTypes";
 import type { SuperficialVehicle } from "../map";
 import Link from "next/link";
@@ -78,8 +78,8 @@ export default function VehiclePopup(props: {
       const style = i === 0 ? 'font-bold' : 'italic';
       return <div key={a.id}>
         {
-          a.trip.trips.every(t => vehicle.tripInfo?.trips.includes(t)) ? <div><span className={style}>This trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
-          blocks?.next?.trips.every(t => a.trip.trips.includes(t)) ? <div><span className={style}>Next trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
+          areArraysSimilar(a.trip.trips, vehicle.tripInfo?.trips) ? <div><span className={style}>This trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
+          areArraysSimilar(a.trip.trips, blocks?.next?.trips) ? <div><span className={style}>Next trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
           <div><span className={style}>As</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div>
         }
         <div className="font-bold text-center">{`${a.departing ? "Departing" : "Arriving"} ${arrivalString(a.stopTime)}`}</div>

@@ -5,7 +5,7 @@ import { api } from "~/utils/api";
 import RouteChip from "../../Route";
 import { useMap, isUnfocused, StopArrival, DirectionKey, LastUpdated } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
-import { getHSTTime } from "~/lib/util";
+import { areArraysSimilar, getHSTTime } from "~/lib/util";
 import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 
 
@@ -89,7 +89,7 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
     vehicles={vehicles?.map(v => {
       const info = v.tripInfo?.trips;
       return { ...v, nextStop: getExpectedStop(
-        allStops?.filter(s => s.trips.some(t => info?.includes(t._id))).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
+        allStops?.filter(s => areArraysSimilar(s.trips.map(t => t._id), info)).map(s => ({ stop: s.stop, trip: s.trips.find(t => info?.includes(t._id))! })), v.tripInfo, getVehicleNow(v, now)) 
       };
     })}
     vehicleHook={setOpenVehicles}
