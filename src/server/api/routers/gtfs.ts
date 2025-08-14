@@ -8,7 +8,7 @@ import { decode } from "html-entities";
 import { TRPCError } from "@trpc/server";
 import { type ShapesWithStops, type UnifiedCalendarInfo } from "~/lib/GTFSTypes";
 import { getGTFS, type GTFSFeed } from "~/utils/cache";
-import { closestPoint } from "~/lib/GTFSBinds";
+import { calculateDistance, closestPoint } from "~/lib/GTFSBinds";
 
 const getShape = (feed: GTFSFeed, shapeID: string): GTFS.PolishedShape[] => {
   const shapes = feed.shapes.filter(s => s.shape_id === shapeID);
@@ -235,13 +235,6 @@ const getRouteWithShapesByID = (feed: GTFSFeed, routeId: string): Types.Polished
   };
 }
 
-// internal
-const calculateDistance = (shapes: GTFS.PolishedShape[]): number => {
-  return shapes.reduce((dist, curr, index) => 
-    index < 1 ? 0 : (dist + haversine([curr.lat, curr.lon], [shapes[index-1]!.lat, shapes[index-1]!.lon])),
-  0);
-}
-
 const calculateFullShapeDistance = (feed: GTFSFeed, shid: string): number => {
   const shapes = getShape(feed, shid);
   if(!shapes.length) return 0;
@@ -423,6 +416,8 @@ export const getBlockInfo = (feed: GTFSFeed, tripId: string): GTFS.BlockContaine
     trips: ranking
   };
 }
+
+const kamHwy: GTFS.PolishedShapeContainer[] = [];
 
 const zLocation = z.tuple([ z.number(), z.number() ]);
 
@@ -677,6 +672,18 @@ export const GTFSRouter = createTRPCRouter({
         shapes,
         stops
       };
+    }),
+  getKamHwyShapes: publicProcedure
+    .query(async (): Promise<GTFS.PolishedShapeContainer[]> => {
+      const feed = await getGTFS();
+      if(!kamHwy.length) {
+        const shids = [...new Set(feed.shapes.filter(s => parseFloat(s.shape_pt_lat) >= 21.6).map(s => s.shape_id))];
+        for(const shid of shids) {
+          const shape = getShapeByShID(feed, shid);
+          if(shape) kamHwy.push(shape);
+        }
+      }
+      return kamHwy;
     }),
   getRouteWithShapesByID: publicProcedure
     .input(z.object({ routeId: z.string() }))

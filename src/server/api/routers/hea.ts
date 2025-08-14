@@ -12,7 +12,7 @@ import { getExpectedTrip } from "~/lib/GTFSBinds";
 // used to report vehicle locations and timeliness
 export const BUSAPI = "https://api.thebus.org/";
 
-interface ArrivalsContainer {
+export interface ArrivalsContainer {
   stop: string;
   timestamp: number;
   arrivals: Types.HEA_Arrival[];

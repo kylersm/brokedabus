@@ -1,4 +1,3 @@
-
 import type * as GTFS from "./GTFSTypes";
 import type { PostRqVehicle, PolishedVehicle } from "./types";
 import { areArraysSimilar, getHSTTime, haversine } from "./util";
@@ -37,4 +36,10 @@ export const closestPoint = (shapes: GTFS.PolishedShape[], point: [number, numbe
     return havCurr < havBest ? i : b;
   }, 0);
   return shapes[Math.min(closestAfter, shapes.length - 1)]!;
+};
+
+// internal
+export const calculateDistance = (shapes: GTFS.PolishedShape[]): number => {
+  return shapes.reduce((dist, curr, index) => index < 1 ? 0 : (dist + haversine([curr.lat, curr.lon], [shapes[index - 1]!.lat, shapes[index - 1]!.lon])),
+    0);
 };
