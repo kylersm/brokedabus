@@ -95,13 +95,14 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
       popup: <StopPopup stop={stop.info} noGPS={!arrivalCache?.vehicle} />
     }]}
     routePath={shapes && arrivalCache ? shapes.map((s) => {
+      let shapes = s.shapes;
       if(arrivalCache.vehicle && (
         /* & this is the shape */
-        s.shapes.length && 
+        shapes.length && 
         s.shapeId === arrivalCache.vehicle?.tripInfo?.shapeId)) {
-          const closest = closestPoint(s.shapes, [arrivalCache.vehicle.lat, arrivalCache.vehicle.lon]);
-          s.shapes = s.shapes.filter(shape => shape.sequence >= closest.sequence);
-          s.shapes.unshift({
+          const closest = closestPoint(shapes, [arrivalCache.vehicle.lat, arrivalCache.vehicle.lon]);
+          shapes = shapes.filter(shape => shape.sequence >= closest.sequence);
+          shapes.unshift({
             lat: arrivalCache.vehicle.lat, lon: arrivalCache.vehicle.lon,
             sequence: 0
           });
@@ -109,7 +110,7 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
 
       return {
         direction: s.direction === 1 ? 'East' : 'West',
-        routePath: s,
+        routePath: { ...s, shapes },
       }
     }) : []}
   />;
