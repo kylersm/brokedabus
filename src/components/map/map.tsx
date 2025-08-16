@@ -19,6 +19,7 @@ import VehiclePopup from './popups/VehiclePopup';
 import SmoothWheelZoom from "~/components/map/hooks/SmoothWheelZoom";
 import PolylineDecorator from "~/components/map/hooks/PolylineDecorator";
 import { Theme } from '~/lib/prefs';
+import Spinner from '../Spinner';
 import { useTheme } from '~/context/ThemeContext';
 
 export const activeMapBtn = "bg-slate-200 dark:bg-slate-700";
@@ -82,10 +83,10 @@ export default function Map(props: {
   refHook?: Dispatch<SetStateAction<L.Map | undefined>>;
   // get a list of open vehicle popups in the parent element
   vehicleHook?: Dispatch<SetStateAction<string[]>>;
-  // other elements we might want to show (only occurrence is the tap for stops circle)
-  otherComps?: JSX.Element[] | JSX.Element
-}) {
-  const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, otherComps } = props;
+  // show a loading spinner
+  loading?: boolean;
+} & PropsWithChildren) {
+  const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, loading, children } = props;
 
   const darkTheme = useTheme()?.[0] === Theme.DARK;
   // keeps track of open vehicle popups so we can dynamically show the user relevant shapes / stops.
@@ -155,6 +156,12 @@ export default function Map(props: {
     {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-60 w-full'>
       <div className='w-full'>{header}</div>
     </div>}
+    <div className={`${loading ? 'opacity-100': 'opacity-0'} flex fixed z-20 text-center w-full h-full bg-opacity-50 bg-white dark:bg-opacity-50 dark:bg-neutral-600 pointer-events-none transition-all duration-500`}>
+      <div className='mx-auto my-auto'>
+        <Spinner shadow/>
+        <p className='italic font-semibold'>Loading data...</p>
+      </div>
+    </div>
     <div className="left-1/2 -translate-x-1/2 fixed flex z-10 bottom-20">
       <div className="mx-auto p-1.5 bg-white dark:bg-gray-500 rounded-xl flex shadow-btn">
         <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2 map-btn`} onClick={() => setMapMode(0)}>
@@ -202,7 +209,7 @@ export default function Map(props: {
         // h shows street names, places, etc.
         // m shows a mapped out view
         maxZoom={20}
-        maxNativeZoom={mapMode >= 1 ? 18 : 16}
+        maxNativeZoom={16}
         url={
           mapMode >= 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
           /* mapMode is 0 */ `https://{s}.basemaps.cartocdn.com/${darkTheme ? 'dark_all' : 'light_all'}/{z}/{x}/{y}${L.Browser.retina ? '@2x' : ''}.png`
@@ -286,6 +293,7 @@ export default function Map(props: {
         <Marker
           key={"BUS" + v.number}
           position={[v.lat, v.lon]}
+          // position={fixPosition(v, now, kamHwy?.find(s => s.shapeId === v.tripInfo?.shapeId))}
           icon={new L.Icon({
             iconUrl: v.icon,
             iconSize: [zoomLvl/11 * 30, zoomLvl/11 * 30],
@@ -360,7 +368,7 @@ export default function Map(props: {
       : <></>}
 
       { /* Other leaflet components (e.g. circles) that we may want to add */}
-      {otherComps}
+      {children}
     </MapContainer>
   </div>);
 }
