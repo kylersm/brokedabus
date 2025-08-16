@@ -1,12 +1,12 @@
 import Image from "next/image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PadPage from "~/components/templates/PadPage";
-import ThemeContext from "~/context/ThemeContext";
+import { useTheme } from "~/context/ThemeContext";
 import { getTheme, Theme } from "~/lib/prefs";
 
 export default function Home() {
   const [showNudge, setSN] = useState<boolean>();
-  const themeState = useContext(ThemeContext);
+  const themeState = useTheme();
   const [lsTheme, setLSTheme] = useState<Theme>();
   useEffect(() => setLSTheme(getTheme()), []);
 

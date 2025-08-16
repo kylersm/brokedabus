@@ -5,7 +5,7 @@ import { useMap } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import { api } from "~/utils/api";
 import { Theme } from "~/lib/prefs";
-import ThemeContext from "~/context/ThemeContext";
+import { useTheme } from "~/context/ThemeContext";
 
 const distance = 1000 /* meters */;
 
@@ -22,7 +22,7 @@ const distance = 1000 /* meters */;
  */
 export function TapToFindStops() {
   const Map = useMap();
-  const darkTheme = useContext(ThemeContext)?.[0] === Theme.DARK;
+  const darkTheme = useTheme()?.[0] === Theme.DARK;
   // workaround to prevent SSR
   const Circle = dynamic(
     async () => (await import("react-leaflet")).Circle, { ssr: false }
@@ -94,18 +94,22 @@ export function TapToFindStops() {
         popup: <StopPopup stop={s} trips={[]} />
       })) : []}
       center={point ? point : location ? [location.coords.latitude, location.coords.longitude] : undefined}
-      otherComps={point ? <Circle
+    >
+      {point ? <Circle
         center={point}
         radius={distance}
         weight={1}
         color="#f00"
         fillColor="#f00"
-        fillOpacity={0.25} /> : location ? <Circle
-          center={[location.coords.latitude, location.coords.longitude]}
-          radius={distance}
-          weight={1}
-          color="#f00"
-          fillColor="#f00"
-          fillOpacity={0.25} /> : <></>} />
+        fillOpacity={0.25} /> : 
+      location ? <Circle
+        center={[location.coords.latitude, location.coords.longitude]}
+        radius={distance}
+        weight={1}
+        color="#f00"
+        fillColor="#f00"
+        fillOpacity={0.25} /> : 
+      null}
+    </Map>
   </>;
 }

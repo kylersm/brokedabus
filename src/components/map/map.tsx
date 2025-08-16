@@ -10,7 +10,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-import { type JSX, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction, useContext } from "react";
+import { type JSX, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction, type PropsWithChildren } from "react";
 import type { PolishedArrival, PostRqVehicle } from "~/lib/types";
 import type { PolishedShapeContainer, StopTrip } from "~/lib/GTFSTypes";
 import { brightenColor, getColorFromRoute, getContrastFromRoute } from "~/lib/BusTypes";
@@ -18,8 +18,8 @@ import VehiclePopup from './popups/VehiclePopup';
 
 import SmoothWheelZoom from "~/components/map/hooks/SmoothWheelZoom";
 import PolylineDecorator from "~/components/map/hooks/PolylineDecorator";
-import ThemeContext from '~/context/ThemeContext';
 import { Theme } from '~/lib/prefs';
+import { useTheme } from '~/context/ThemeContext';
 
 export const activeMapBtn = "bg-slate-200 dark:bg-slate-700";
 
@@ -87,7 +87,7 @@ export default function Map(props: {
 }) {
   const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, otherComps } = props;
 
-  const darkTheme = useContext(ThemeContext)?.[0] === Theme.DARK;
+  const darkTheme = useTheme()?.[0] === Theme.DARK;
   // keeps track of open vehicle popups so we can dynamically show the user relevant shapes / stops.
   const openVehicles = useMemo(() => new Set<string>(), []);
   const [isMapSet, setIMS] = useState<boolean>();

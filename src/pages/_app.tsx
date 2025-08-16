@@ -6,30 +6,10 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import Head from "next/head";
 import Navbar from "~/components/Navbar";
-import { getTheme, setTheme, Theme } from "~/lib/prefs";
-import { useEffect, useState } from "react";
-import ThemeContext from "~/context/ThemeContext";
+import { ThemeProvider } from "~/context/ThemeContext";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  const [usableTheme, setUTheme] = useState<Theme>(Theme.LIGHT);
-  const setNewTheme = (theme: Theme) => {
-    setTheme(theme);
-    const useDark = theme === Theme.DARK || (theme === Theme.AUTO && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    if(useDark) {
-      document.documentElement.classList.add("dark");
-      setUTheme(Theme.DARK);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setUTheme(Theme.LIGHT);
-    }
-  }
-
-  useEffect(() => {
-    document.documentElement.classList.add("delay-100", "transition", "duration-500");
-    setNewTheme(getTheme());
-  }, []);
-
-  return (<ThemeContext value={[usableTheme, setNewTheme]}>
+  return (<ThemeProvider>
     <div className={`${GeistSans.className} flex flex-col pt-12 h-dvh`}>
       <Head>
         <title>BrokeDaBus</title>
@@ -44,7 +24,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <Component {...pageProps}/>
       </div>
     </div>
-  </ThemeContext>);
+  </ThemeProvider>);
 };
 
 export default api.withTRPC(MyApp);

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useContext, type PropsWithChildren } from "react";
-import ThemeContext from "~/context/ThemeContext";
+import { type PropsWithChildren } from "react";
+import { useTheme } from "~/context/ThemeContext";
 import { Theme } from "~/lib/prefs";
 
 /**
@@ -13,7 +13,7 @@ import { Theme } from "~/lib/prefs";
 export default function NotFound(props: {
   errorMessage: string;
 } & PropsWithChildren) {
-  const theme = useContext(ThemeContext)?.[0];
+  const theme = useTheme()?.[0];
   const router = useRouter();
 
   return <div className='w-full h-full flex'>

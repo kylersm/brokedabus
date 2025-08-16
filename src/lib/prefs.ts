@@ -1,7 +1,7 @@
 'use client';
 
-const THEME_KEY = "theme";
-const FAVORITE_STOPS_KEY = "favorites";
+export const THEME_KEY = "theme";
+export const FAVORITE_STOPS_KEY = "favorites";
 
 export enum Theme {
   AUTO='A',
