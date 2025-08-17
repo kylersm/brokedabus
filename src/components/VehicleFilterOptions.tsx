@@ -6,6 +6,7 @@ import { sortRouteCodes } from "~/lib/util";
 import RouteChip from "./Route";
 import { api } from "~/utils/api";
 import RemoveUnderline from "./RemoveUnderline";
+import Spinner from "./Spinner";
 
 const SelectClass = "block md:flex gap-x-6 space-y-2 sm:space-y-0 whitespace-nowrap text-left flex-wrap pb-3";
 export const ExpandArrowClass = "inline-flex font-normal text-neutral-500 dark:text-neutral-400";
@@ -127,7 +128,7 @@ export default function VehicleFilterOptions(props: {
           >Unselect All</span>
         </div>
 
-        <div className={`${ContainerClass} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4`}>{(allRoutes ?? []).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
+        <div className={`${ContainerClass} ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
           <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
             <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
               !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
