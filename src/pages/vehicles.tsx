@@ -9,7 +9,7 @@ import HeadTitle from "~/components//HeadTitle";
 export default function VehiclesList() {
   const [filters, setFilters] = useState<VehicleFiltering>({ ...defaultVehicleFilters });
   const { data: vehicles } = api.hea.getVehiclesTO.useQuery({ }, {
-    refetchInterval: 15000
+    refetchInterval: 10 * 1000
   });
 
   const [showFilter, setSF] = useState<boolean>(false);

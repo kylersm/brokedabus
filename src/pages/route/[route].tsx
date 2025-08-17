@@ -36,7 +36,7 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
     api.gtfs.getRouteWithShapesByCode.useQuery({ routeCode: route });
 
   const { data: heaVehicles } = api.hea.getVehiclesTO.useQuery({ route }, {
-    refetchInterval: 15000
+    refetchInterval: 7.5 * 1000
   });
 
   if(isError) return <>

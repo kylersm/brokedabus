@@ -25,8 +25,9 @@ const StopArrivals: NextPage<{stop:string}> = ({ stop }) => {
   const [routeFilter, setRouteFilter] = useState<string>();
   const { data: routesServed, isError } = api.gtfs.getStopWithHeadsigns.useQuery({ code: stop });
   const [favoriteInfo, setFI] = useState<FavoriteStop>();
+
   const { data: arrivals } = api.hea.getArrivals.useQuery({ stop }, {
-    refetchInterval: 15000
+    refetchInterval: 7.5  * 1000
   });
 
   const [now, setNow] = useState(Date.now());

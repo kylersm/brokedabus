@@ -9,7 +9,7 @@ import { api } from "~/utils/api";
 
 export default function Anomalies() {
   const { data: vehicles } = api.hea.getVehicles.useQuery({}, {
-    refetchInterval: 7500
+    refetchInterval: 10 * 1000
   });
 
   const tripVehicles: Required<Types.TripVehicle>[] = vehicles?.

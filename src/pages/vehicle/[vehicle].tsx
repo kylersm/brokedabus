@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import ListItem from '~/components/ListItem';
 import NotFound from '~/components/NotFound';
 import Button from '~/components/Button';
-import { getExpectedTrip } from '~/lib/GTFSBinds';
+import { createPostRqVehicle, getExpectedTrip } from '~/lib/GTFSBinds';
 import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import GenericTable from '~/components/GenericTable';
@@ -25,12 +25,10 @@ const isArrivalFresh = (arrived: number) => arrived + 65 >= 0;
 const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
 
   const { data: vehicleInfo } = api.hea.getVehicle.useQuery({ vehicleNum: vehicle }, {
-    refetchInterval: (r) => {
-      if (r.state.error)
-        return false;
-      else return 10000;
-    }
+    refetchInterval: 7.5 * 1000,
+    select: createPostRqVehicle
   });
+
   const tripInfo = getExpectedTrip(vehicleInfo?.block);
   const { data: stops } = api.gtfs.getStopsByTripID.useQuery({ tripId: tripInfo?.trips ?? [] }, {
     enabled: !!tripInfo?.trips.length
