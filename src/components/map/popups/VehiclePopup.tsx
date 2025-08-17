@@ -1,9 +1,9 @@
 import RouteChip from "../../Route";
-import { areArraysSimilar, arrivalString, getHSTTime, HST_UTC_OFFSET, HSTify, quantifyMiles, quantifyTime } from "~/lib/util";
+import { areArraysSimilar, arrivalString, HST_UTC_OFFSET, HSTify, quantifyMiles, quantifyTime } from "~/lib/util";
 import { busInfoToShortString, getVehicleInformation } from "~/lib/BusTypes";
 import type { SuperficialVehicle } from "../map";
 import Link from "next/link";
-import { getNextTripLayover } from "~/lib/GTFSBinds";
+import { getNextTripLayover, getVehicleNow } from "~/lib/GTFSBinds";
 
 /**
  * Used by internal map to add popup text for vehicles.
@@ -59,10 +59,7 @@ export default function VehiclePopup(props: {
       quantifyTime(Math.abs(vehicle.adherence * 60)) + ' ' +
     (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule";
 
-  const now = getHSTTime();
-  const tripNow = now + vehicle.adherence * 60;
-  const currentIsTmrw = tripNow >= 24 * 60 * 60;
-  const nextDelta = (blocks?.next?.firstArrives ?? 0) > (24 * 60 * 60) && currentIsTmrw ? 24 * 60 * 60 : 0;
+  const vehicleNow = getVehicleNow(vehicle);
   const nextTrip = !arrivals && blocks?.next ? <div className="mt-2">
     <b>Next trip:</b> <RouteChip route={{ code: blocks.next.routeCode, id: blocks.next.routeId }} inline/> {blocks.next.headsign}
   </div> : null;
@@ -88,19 +85,19 @@ export default function VehiclePopup(props: {
     })}
     {schedule}
     {blocks && <>{
-        blocks.next && (tripNow+nextDelta > blocks.end || (vehicle.adherence >= 0 && now+nextDelta > blocks.end)) && now+nextDelta < blocks.next.firstArrives ? <>,
+        blocks.next && (vehicleNow > blocks.end || (vehicle.adherence >= 0 && vehicleNow > blocks.end)) && vehicleNow < blocks.next.firstArrives ? <>,
           On layover until {HSTify(new Date((blocks.next.firstArrives + HST_UTC_OFFSET) * 1000), true)}<br/>
           {nextTrip}
         </> :
-        blocks.next && tripNow+nextDelta > blocks.end && tripNow+nextDelta >= blocks.next.firstArrives && now+nextDelta <= blocks.next.firstArrives ? <>, 
+        blocks.next && vehicleNow > blocks.end && vehicleNow >= blocks.next.firstArrives && vehicleNow <= blocks.next.firstArrives ? <>, 
           Driver may skip layover<br/>
           {nextTrip}
         </> :
-        blocks.next && tripNow+nextDelta >= blocks.next.firstArrives ? <>, 
+        blocks.next && vehicleNow >= blocks.next.firstArrives ? <>, 
           Next trip is starting.<br/>
           {nextTrip}
         </> :
-        tripNow+nextDelta > blocks.end ? <>, 
+        vehicleNow > blocks.end ? <>, 
           Ended last trip; heading back to bus facility
         </> : <>
         {!blocks.next ? <>, Last trip for bus.</> : null}
