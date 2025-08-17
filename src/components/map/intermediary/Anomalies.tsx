@@ -6,12 +6,13 @@ import { PearlCityBusses, PearlCityRoutes, KalihiBusses, KalihiRoutes, ArticRout
 export function Anomalies() {
   const Map = useMap();
 
-  const { data: vehicles } = api.hea.getVehicles.useQuery({ }, {
+  const { data: vehicles, isFetching } = api.hea.getVehicles.useQuery({ }, {
     refetchInterval: 10 * 1000,
     select: createPostRqVehicles
   });
 
   return <Map
+    loading={isFetching && vehicles === undefined}
     vehicles={vehicles?.filter(v => {
       // yikes
       const vehicleInfo = getVehicleInformation(v.number);

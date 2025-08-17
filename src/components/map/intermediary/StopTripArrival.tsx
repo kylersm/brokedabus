@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { TripStopAIO, PolishedArrivalContainer } from "~/lib/types";
 import { HSTify } from "~/lib/util";
 import { api } from "~/utils/api";
-import { useMap, refetchInterval, DirectionKey, LastUpdated } from "../mapIntermediate";
+import { useMap, DirectionKey, LastUpdated } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import type { Map } from "leaflet";
 import { closestPoint } from "~/lib/GTFSBinds";
@@ -33,25 +33,21 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
     enabled: !!shapesToUse.length
   });
 
-  const arrival = api.hea.getArrivalIfExists.useQuery({ stop: stop.info.code, trip, vehicle: arrivalCache?.vehicle?.number }, {
-    refetchInterval: (_query) => {
-      if (arrivalGone)
-        return false;
-      else
-        return refetchInterval;
-    }
+  const arrivalQuery = api.hea.getArrivalIfExists.useQuery({ stop: stop.info.code, trip, vehicle: arrivalCache?.vehicle?.number }, {
+    refetchInterval: 7.5 * 1000,
+    enabled: !arrivalGone
   });
 
   // polished arrival and check if arrival is expired effect
   useEffect(() => {
-    if (arrival.isSuccess) {
-      if (arrival.data.arrival === undefined)
+    if (arrivalQuery.isSuccess) {
+      if (arrivalQuery.data.arrival === undefined)
         setArrivalGone(true);
       else {
-        setArrivalCache(arrival.data);
+        setArrivalCache(arrivalQuery.data);
       }
     }
-  }, [arrival.isSuccess, arrival.data, stop.info.code]);
+  }, [arrivalQuery.isSuccess, arrivalQuery.data, stop.info.code]);
 
   const [map, setMap] = useState<Map>();
   const [zoomed, setZoomed] = useState<boolean>();
@@ -71,6 +67,7 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
   }, [map, zoomed, arrivalCache, stop.info]);
 
   return <Map
+    loading={arrivalQuery.isFetching && arrivalQuery.isPending}
     refHook={setMap}
     header={<>
       {arrivalCache?.vehicle ? <>Monitoring Bus {arrivalCache.vehicle.number} for Stop {stop.info.code}</> : 'No GPS to follow'}

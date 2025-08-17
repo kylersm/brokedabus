@@ -1,6 +1,6 @@
 import type { Map } from "leaflet";
 import dynamic from "next/dynamic";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useMap } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import { api } from "~/utils/api";

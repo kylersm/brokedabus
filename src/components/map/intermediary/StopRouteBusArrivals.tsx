@@ -2,7 +2,7 @@ import type { LatLngTuple, Map } from "leaflet";
 import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import RouteChip from "../../Route";
-import { useMap, DirectionKey, LastUpdated, refetchInterval } from "../mapIntermediate";
+import { useMap, DirectionKey, LastUpdated } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import type { PolishedArrivalsContainer, TripStopAIO } from "~/lib/types";
 import { sortString } from "~/lib/util";
@@ -22,8 +22,8 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
   const { stop } = props;
   const Map = useMap();
 
-  const { data: arrivals } = api.hea.getArrivals.useQuery({ stop: stop.info.code }, {
-    refetchInterval
+  const { data: arrivals, isFetching } = api.hea.getArrivals.useQuery({ stop: stop.info.code }, {
+    refetchInterval: 7.5 * 1000
   });
 
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
@@ -66,6 +66,7 @@ export function StopRouteBusArrivals(props: { stop: TripStopAIO; }) {
   const arrivalsWithFilters = arrivals?.filter((a): a is Required<PolishedArrivalsContainer> => !!a.vehicle && (!routeFilter || a.arrivals.some(a => a.trip.routeCode === routeFilter)));
 
   return <Map
+    loading={isFetching && arrivals === undefined}
     refHook={setMap}
     header={<>{routeFilter ?
       <>Incoming busses at Stop {stop.info.code} - {stop.info.name} for route <RouteChip route={{ code: routeFilter }} inline /></> :

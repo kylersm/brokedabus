@@ -23,9 +23,8 @@ import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFS
 export function AllBusses() {
   const Map = useMap();
 
-  const { data: vehicles } = api.hea.getVehicles.useQuery({ }, {
+  const { data: vehicles, isFetching } = api.hea.getVehicles.useQuery({ }, {
     refetchInterval: 10 * 1000,
-    // refetch every 10 seconds
     select: createPostRqVehicles
   });
 
@@ -90,6 +89,7 @@ export function AllBusses() {
         };
       })}
       vehicleHook={setOpenVehicles}
+      loading={isFetching && vehicles === undefined}
       wipeBus={(v) => !numbers.includes(v.number)}
       stops={allStops?.map(s => ({
         location: [s.stop.lat, s.stop.lon],

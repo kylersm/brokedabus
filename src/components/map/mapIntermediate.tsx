@@ -7,9 +7,6 @@ import { Theme } from "~/lib/prefs";
 
 // list of utilities for map-related purposes
 
-// refresh every 5000 milliseconds or every 5 seconds
-export const refetchInterval = 5000;
-
 // apparently we need useMemo or else anything requiring maps freezes
 export const useMap = () => useMemo(() => dynamic(
   () => import("./map"),

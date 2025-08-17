@@ -8,7 +8,6 @@ import StopPopup from "../popups/StopPopup";
 import { areArraysSimilar, getHSTTime } from "~/lib/util";
 import { createPostRqVehicles, getExpectedStop, getVehicleNow } from "~/lib/GTFSBinds";
 
-
 /**
  * Shows a map for a specific route. Accessed using /route/[code]/map
  * 
@@ -28,11 +27,10 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
   const { route } = props;
   const Map = useMap();
 
-  const { data: vehicles } = api.hea.getVehicles.useQuery({ route: route.code }, {
-    refetchInterval: 7500,
+  const { data: vehicles, isFetching } = api.hea.getVehicles.useQuery({ route: route.code }, {
+    refetchInterval: 7.5 * 1000,
     select: createPostRqVehicles
   });
-
   const [openVehicles, setOpenVehicles] = useState<string[]>([]);
 
   const { data: allShapes } = api.gtfs.getShapesByRoute.useQuery({ routeId: route._id });
@@ -77,6 +75,7 @@ export function BusRoutes(props: { route: PolishedRoute; }) {
   }, []);
 
   return <Map
+    loading={isFetching && vehicles === undefined}
     header={<>
       Showing busses on route <RouteChip route={{ code: route.code, id: route._id }} inline /> {route.name}<br />
       <DirectionKey directionHook={setDir}/>
