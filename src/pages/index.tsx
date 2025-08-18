@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import PadPage from "~/components/templates/PadPage";
 import { useTheme } from "~/context/ThemeContext";
@@ -28,7 +29,8 @@ export default function Home() {
 
           <span onClick={() => setSN(!showNudge)} className="italic text-emerald-500 underline cursor-pointer">Navigating</span> is done via the top bar. You can also go back between pages using the back arrow button in the top left corner.<br/><br/>
 
-          Need to change your theme?: <form 
+          <b>Need to change your theme?</b>
+          <form 
             className="flex space-x-6"
             onChange={(e) => {
               const thm = (e.target as HTMLInputElement).value as Theme;
@@ -39,9 +41,9 @@ export default function Home() {
             <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.AUTO} value={Theme.AUTO}/>Auto</label>
             <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.DARK} value={Theme.DARK}/>Dark</label>
             <label><input type="radio" name="theme" readOnly checked={lsTheme === Theme.LIGHT} value={Theme.LIGHT}/>Light</label>
-          </form>
+          </form><br/>
 
-          Features this app offers:<br/>
+          <b>Features this app offers:</b><br/>
           <ul className="list-disc ml-5">
             <li>Showing stop arrivals and calendar</li>
             <li>Filter for stop arrivals</li>
@@ -51,9 +53,10 @@ export default function Home() {
             <li>Showing all vehicles on a map/page</li>
             <li>Showing a vehicle{"'"}s active trip, block info, and stops</li>
             <li>Keep track of your favorite bus stops</li>
+            <li><Link className="link" href={"/extras"}>Extras</Link> for bus spotters</li>
           </ul><br/>
 
-          If you want...<br/>
+          <b>If you want...</b><br/>
           <ul className="list-disc ml-5">
             <li>
               To know how to go from A to B
