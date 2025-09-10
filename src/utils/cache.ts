@@ -152,7 +152,6 @@ async function getVehiclePromise() {
   const now = Date.now();
   const feed = await getGTFS();
   if (lastFetchedVehicles < 0 || now - lastFetchedVehicles > 7.5 * 1000) {
-    console.log("fetching vehicles");
     const xml = (await axios.get(`${BUSAPI}vehicle/?key=${env.HEA_KEY}`)).data as string;
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
