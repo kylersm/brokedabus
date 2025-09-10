@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import HeadTitle from "~/components/HeadTitle";
 import RouteChip from "~/components/Route";
+import Spinner from "~/components/Spinner";
 import PadPage from "~/components/templates/PadPage";
 import { ArticRoutes, ElectricRoutes, FuelType, getVehicleInformation, HybridRoutes, KalihiBusses, KalihiRoutes, L29_Routes, L35_Routes, L40_Routes, PearlCityBusses, PearlCityRoutes } from "~/lib/BusTypes";
 import * as GTFSBinds from "~/lib/GTFSBinds";
@@ -71,6 +72,6 @@ export default function Anomalies() {
     <div>
       Vehicle Anomalies
     </div>
-    {msg.length ? msg : <i>No anomalies found.</i>}
+    {!vehicles ? <Spinner/> : msg.length ? msg : <i>No anomalies found.</i>}
   </PadPage>;
 }
