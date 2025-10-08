@@ -1,6 +1,6 @@
 import { busInfoToShortString, filterVehicles, getVehicleInformation, type HeadsignColor, type VehicleInfo, type WindowColor, type WindowType } from "~/lib/BusTypes";
 import Spinner from "./Spinner";
-import { HSTify, quantifyTimeShortened } from "~/lib/util";
+import { HSTify, quantifyTimeAsTS, quantifyTimeShortened } from "~/lib/util";
 import Link from "next/link";
 import RouteChip from "./Route";
 import type { TripVehicle } from "~/lib/types";
@@ -50,7 +50,7 @@ export interface VehicleFiltering {
 
 export const defaultVehicleFilters = {
   lastMessage: ActiveType.DAY,
-  sortType: SortType.DATE,
+  sortType: SortType.NUMBER,
   ascendSort: false,
 
   hasRoute: true,
@@ -79,31 +79,30 @@ export default function Vehicles(props: {
   const filteredVehicles = filterVehicles(vehicles, filters);
 
   return <div>
-    <div className="flex w-fit gap-x-2 mx-auto">
-      <label><input type="radio" name="view" className="mr-1" checked={view === View.ITEMS} onClick={() => setView(View.ITEMS)}/>Items</label>
-      <label><input type="radio" name="view" className="mr-1" checked={view === View.LIST} onClick={() => setView(View.LIST)}/>List</label>
+    <div className="flex w-fit gap-x-2 mx-auto mb-3">
+      <label><input type="radio" name="view" className="mr-1" checked={view === View.ITEMS} onChange={() => setView(View.ITEMS)}/>Items</label>
+      <label><input type="radio" name="view" className="mr-1" checked={view === View.LIST} onChange={() => setView(View.LIST)}/>List</label>
     </div>
     {filteredVehicles ? 
     filteredVehicles.length ? 
-      <div className="m-3 px-5 grid gap-x-10 grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] w-full text-left mx-auto">
-        {view === View.ITEMS ? filteredVehicles.map(v => <>
+        view === View.ITEMS ? <div className="mb-3 px-5 grid gap-x-10 grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] w-full text-left mx-auto">{filteredVehicles.map(v => <>
           <VehicleEntryFullInfo key={'F' + v.number} vehicle={v}/>
           <VehicleEntryPhoneInfo key={'S' + v.number} vehicle={v}/>
-        </>) : <table>
+        </>)}</div> : <table className="border-collapse w-full mx-auto sm:text-left whitespace-nowrap">
           <thead>
-            <tr>
-              <th>Bus Number</th>
-              <th>Driver</th>
-              <th>Adherence</th>
-              <th>Last Updated</th>
-              <th colSpan={2}>Route</th>
+            <tr className="text-center">
+              <th>Bus</th>
+              <th className="hidden md:table-cell" colSpan={2}>Route</th><th className="table-cell md:hidden" colSpan={1}>Route</th>
+              <th className="hidden lg:table-cell">Trip</th>
+              <th className="hidden lg:table-cell">Driver</th>
+              <th className="hidden md:table-cell">Adherence</th><th className="table-cell md:hidden">Adhr.</th>
+              <th className="hidden lg:table-cell">Last Updated</th><th className="table-cell lg:hidden">Updated</th>
             </tr>
           </thead>
-          <tbody className="[&_td]:border-2">
+          <tbody className="altcolors">
             {filteredVehicles.map(v => <VehicleListEntry key={'L' + v.number} vehicle={v}/>)}
           </tbody>
-        </table>}
-      </div> : 
+        </table> : 
     <div><i>No vehicles found</i></div> :
   <Spinner/>}
   </div>;
@@ -152,17 +151,44 @@ function VehicleListEntry(props: { vehicle: TripVehicle }) {
   const { vehicle } = props;
   const { tripInfo } = vehicle;
 
-  const schedule = (Math.abs(vehicle.adherence) <= 0.02 ? "On" : 
+  const onSchedule = Math.abs(vehicle.adherence) <= 0.02;
+  const schedule = (onSchedule ? "On" : 
     quantifyTimeShortened(Math.abs(vehicle.adherence * 60)) + ' ' +
   (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule";
+  const minifySchedule = onSchedule ? "On time": `${vehicle.adherence < 0 ? '-' : '+'}${quantifyTimeAsTS(Math.abs(vehicle.adherence * 60))}`;
   return <tr>
-    <td className="text-xl font-semibold text-right">{vehicle.number}</td>
-    <td>{vehicle.driver}</td>
-    <td>{schedule}</td>
-    <td>{HSTify(vehicle.last_message)}</td>
+    <td className="text-xl font-semibold text-center font-mono py-3 sm:py-0.5 px-3">
+      <Link className="link" href={{
+        pathname: "/vehicle/[vehicle]",
+        query: { vehicle: vehicle.number }
+      }}>{vehicle.number}</Link>
+    </td>
     {tripInfo ? <>
-      <td className="border-r-0"><RouteChip route={{ code: tripInfo.routeCode, id: tripInfo.routeId}}/></td>
-      <td>{tripInfo.headsign}</td>
-    </> : null}
+      <td><div className="flex justify-center gap-x-2">
+        <RouteChip route={{ code: tripInfo.routeCode, id: tripInfo.routeId}}/>
+        <span className="block sm:hidden">{tripInfo.direction ? '->' : '<-'}</span>
+        <span className="hidden sm:block md:hidden font-mono">{tripInfo.direction ? 'Eastbound' : 'Westbound'}</span>
+      </div></td>
+      <td className="hidden md:table-cell w-fit pl-1">
+        {/* Force route name to not force the table off-page & make a scrollbar: https://stackoverflow.com/a/19623352 */}
+        <table className="table-fixed w-full border-0 border-collapse border-spacing-0">
+          <tr className="!bg-transparent"><td className="whitespace-nowrap overflow-hidden text-ellipsis">
+            {tripInfo.headsign}
+          </td></tr>
+        </table>
+      </td>
+      <td className="hidden lg:table-cell">{tripInfo.trips}</td>
+    </> :  <>
+      <td className="table-cell md:hidden text-center">-</td>
+      <td className="hidden md:table-cell text-center" colSpan={2}>-</td>
+      <td className="hidden lg:table-cell text-center">-</td>
+    </>}
+    <td className="hidden lg:table-cell px-2 text-center">{vehicle.driver ? vehicle.driver : <i>-</i>}</td>
+    <td className={"px-2 font-mono " + (!onSchedule ? vehicle.adherence > 0 ? "text-green-500" : "text-red-500" : '')}>
+      <span className="hidden md:block">{schedule}</span>
+      <span className="block md:hidden text-center">{minifySchedule}</span>
+    </td>
+      <td className="hidden lg:table-cell px-2">{HSTify(vehicle.last_message)}</td>
+      <td className="table-cell lg:hidden px-2 text-center font-mono">{HSTify(vehicle.last_message, true)}</td>
   </tr>;
 }

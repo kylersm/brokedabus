@@ -4,7 +4,7 @@ import * as Papa from "papaparse";
 import { XMLParser } from "fast-xml-parser";
 import type * as Types from "~/lib/types";
 import type * as GTFS from "~/lib/GTFSTypes";
-import { BUSAPI } from "~/server/api/routers/hea";
+import { type ArrivalsContainer, BUSAPI } from "~/server/api/routers/hea";
 import { getBlockInfo, YYYYMMDDToTime } from "~/server/api/routers/gtfs";
 import { env } from "~/env";
 import { HST_UTC_OFFSET } from "~/lib/util";
@@ -32,6 +32,7 @@ interface VehiclesContainer {
 
 const vehicles: Record<string, Types.PolishedVehicle> = {};
 let fetchingVehicles = false;
+let vehiclePromise: Promise<typeof vehicles> | undefined = undefined;
 let lastFetchedVehicles = -1;
 
 const XML = new XMLParser({
@@ -98,6 +99,26 @@ const setExpectedTrip = (trips: GTFS.PolishedBlockTrip[], adherence: number): vo
   }
 }
 
+async function getRoute83VehiclesLat() {
+  const kamHwyStops = [
+    '2206', // weed circle        - checks for busses going to haleiwa
+    '2341', // turtle bay resort  - checks for both directions
+    '2386'  // queen liliuokalani - checks for busses going to AMC
+    // all should support route 52, 60, and 88A which go above lat 21.6
+  ];
+
+  for(const stop of kamHwyStops) {
+    const arrivals = (await axios.get<ArrivalsContainer>(`${BUSAPI}arrivalsJSON/?key=${env.HEA_KEY}&stop=${stop}`)).data.arrivals;
+    for(const arrival of arrivals) {
+      const vehicleRef = vehicles[arrival.vehicle];
+      if(vehicleRef) {
+        vehicleRef.lat = parseFloat(arrival.latitude);
+        vehicleRef.lon = parseFloat(arrival.longitude);
+      }
+    }
+  }
+}
+
 /**
  * A "turnstile" way of a relatively intense task.
  * 
@@ -113,12 +134,25 @@ const setExpectedTrip = (trips: GTFS.PolishedBlockTrip[], adherence: number): vo
  * @returns A vehicle object. Key: number, Value: vehicle
  */
 export async function fetchVehicles() {
+  if(lastFetchedVehicles < 0) {
+    if(vehiclePromise)
+      return await vehiclePromise;
+    else
+      return await (vehiclePromise = getVehiclePromise());
+  } else
+    
   if(fetchingVehicles) return vehicles;
   fetchingVehicles = true;
+  const v = await getVehiclePromise();
+  fetchingVehicles = false;
+  return v;
+}
+
+async function getVehiclePromise() {
   const now = Date.now();
+  const feed = await getGTFS();
   if (lastFetchedVehicles < 0 || now - lastFetchedVehicles > 7.5 * 1000) {
     const xml = (await axios.get(`${BUSAPI}vehicle/?key=${env.HEA_KEY}`)).data as string;
-
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
       // select one with higher index
@@ -130,11 +164,11 @@ export async function fetchVehicles() {
 
     newVehicles.forEach(nv => {
       const v = vehicles[nv.number];
-      const block = !nv?.trip || GTFS_FEED.agency.length === 0 ? undefined :
+      const block = !nv?.trip || feed.agency.length === 0 ? undefined :
       // determine if the current trip ID belongs to the cached block, then continue using the cached block
        v?.block?.trips.some(t => t.trips.includes(nv.trip ?? '')) ? v.block : 
       // otherwise get a new block from the new trip ID, or undefined if there is no trip
-        nv.trip ? getBlockInfo(GTFS_FEED, nv.trip) : undefined;
+        nv.trip ? getBlockInfo(feed, nv.trip) : undefined;
       const adherence = // set adherence to whatever comes in, if not previously specified.
         (!v || isNaN(v.adherence) || lastFetchedVehicles < 0) ? nv.adherence 
         // otherwise, set it to the avg of the two
@@ -149,9 +183,11 @@ export async function fetchVehicles() {
         adherence
       };
     });
+
+    await getRoute83VehiclesLat();
     lastFetchedVehicles = now;
   }
-  fetchingVehicles = false;
+
   return vehicles;
 }
 
@@ -191,11 +227,25 @@ const GTFS_FEED: GTFSFeed = {
   trips: []
 };
 let fetchingGTFS = false;
+let gtfsPromise: Promise<GTFSFeed> | undefined = undefined;
 let lastFetchedGTFS = -1;
 
 export async function getGTFS() {
-  if (fetchingGTFS) return GTFS_FEED;
+  if(lastFetchedGTFS < 0) {
+    if(gtfsPromise)
+      return await gtfsPromise;
+    else
+      return await (gtfsPromise = getGTFSPromise());
+  } else
+    
+  if(fetchingGTFS) return GTFS_FEED;
   fetchingGTFS = true;
+  const g = await getGTFSPromise();
+  fetchingGTFS = false;
+  return g;
+}
+
+async function getGTFSPromise() {
   const now = Date.now();
   if (lastFetchedGTFS < 0 || (GTFS_FEED.feed_info[0] && (YYYYMMDDToTime(GTFS_FEED.feed_info[0].feed_end_date, true) + 10 * 60 * 60 * 1000) <= now)) {
     const feedReq = (await axios.get<Buffer>(GTFS_FEED_URL, { responseType: "arraybuffer" }));
@@ -244,6 +294,5 @@ export async function getGTFS() {
     lastFetchedGTFS = now;
   }
 
-  fetchingGTFS = false;
   return GTFS_FEED;
 }

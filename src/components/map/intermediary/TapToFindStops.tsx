@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useMap } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import { api } from "~/utils/api";
+import { Theme } from "~/lib/prefs";
+import { useTheme } from "~/context/ThemeContext";
 
 const distance = 1000 /* meters */;
 
@@ -20,6 +22,7 @@ const distance = 1000 /* meters */;
  */
 export function TapToFindStops() {
   const Map = useMap();
+  const darkTheme = useTheme()?.[0] === Theme.DARK;
   // workaround to prevent SSR
   const Circle = dynamic(
     async () => (await import("react-leaflet")).Circle, { ssr: false }
@@ -46,7 +49,6 @@ export function TapToFindStops() {
 
   useEffect(() => {
     async function getLocation() {
-      console.log((await navigator.permissions.query({ name: "geolocation" })).state)
       if((await navigator.permissions.query({ name: "geolocation" })).state !== 'granted') return;
       await getAndSetLocation();
     };
@@ -64,10 +66,10 @@ export function TapToFindStops() {
 
   return <>
     <div className="left-[calc(50%+9rem)] -translate-x-1/2 fixed flex z-10 bottom-20">
-      <div className="mx-auto p-1.5 bg-white rounded-xl flex shadow-lg">
-        <div className={`py-1 px-2 active:bg-slate-200 active:rounded-md active:shadow-sm h-8 overflow-hidden`} onClick={() => getAndSetLocation()}>
+      <div className="mx-auto p-1.5 bg-white dark:bg-gray-500 rounded-xl shadow-btn">
+        <div className={`py-1 px-2 map-btn h-8 overflow-hidden`} onClick={() => getAndSetLocation()}>
           {/* https://www.svgrepo.com/svg/26529/location-pin */}
-          <svg fill="#000000" width="100%" height="100%" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+          <svg fill={darkTheme ? "#fff" : "#000"} width="100%" height="100%" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
           	 viewBox="0 0 297 297" xmlSpace="preserve" className="text-base max-w-full max-h-full">
           <g>
           	<path d="M148.5,0C87.43,0,37.747,49.703,37.747,110.797c0,91.026,99.729,179.905,103.976,183.645
@@ -92,18 +94,22 @@ export function TapToFindStops() {
         popup: <StopPopup stop={s} trips={[]} />
       })) : []}
       center={point ? point : location ? [location.coords.latitude, location.coords.longitude] : undefined}
-      otherComps={point ? <Circle
+    >
+      {point ? <Circle
         center={point}
         radius={distance}
         weight={1}
         color="#f00"
         fillColor="#f00"
-        fillOpacity={0.25} /> : location ? <Circle
-          center={[location.coords.latitude, location.coords.longitude]}
-          radius={distance}
-          weight={1}
-          color="#f00"
-          fillColor="#f00"
-          fillOpacity={0.25} /> : <></>} />
+        fillOpacity={0.25} /> : 
+      location ? <Circle
+        center={[location.coords.latitude, location.coords.longitude]}
+        radius={distance}
+        weight={1}
+        color="#f00"
+        fillColor="#f00"
+        fillOpacity={0.25} /> : 
+      null}
+    </Map>
   </>;
 }

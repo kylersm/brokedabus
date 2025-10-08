@@ -10,7 +10,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-import { type JSX, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction, useContext } from "react";
+import { type JSX, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction, type PropsWithChildren } from "react";
 import type { PolishedArrival, PostRqVehicle } from "~/lib/types";
 import type { PolishedShapeContainer, StopTrip } from "~/lib/GTFSTypes";
 import { brightenColor, getColorFromRoute, getContrastFromRoute } from "~/lib/BusTypes";
@@ -18,10 +18,11 @@ import VehiclePopup from './popups/VehiclePopup';
 
 import SmoothWheelZoom from "~/components/map/hooks/SmoothWheelZoom";
 import PolylineDecorator from "~/components/map/hooks/PolylineDecorator";
-import ThemeContext from '~/context/ThemeContext';
 import { Theme } from '~/lib/prefs';
+import Spinner from '../Spinner';
+import { useTheme } from '~/context/ThemeContext';
 
-const activeMapBtn = "bg-slate-200 dark:bg-slate-700 rounded-md shadow-sm";
+export const activeMapBtn = "bg-slate-200 dark:bg-slate-700";
 
 export interface SuperficialVehicle extends PostRqVehicle {
   arrivalInfo?: PolishedArrival[];
@@ -82,12 +83,12 @@ export default function Map(props: {
   refHook?: Dispatch<SetStateAction<L.Map | undefined>>;
   // get a list of open vehicle popups in the parent element
   vehicleHook?: Dispatch<SetStateAction<string[]>>;
-  // other elements we might want to show (only occurrence is the tap for stops circle)
-  otherComps?: JSX.Element[] | JSX.Element
-}) {
-  const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, otherComps } = props;
+  // show a loading spinner
+  loading?: boolean;
+} & PropsWithChildren) {
+  const { vehicles, routePath, stops, header, zoom, center, noGPS, wipeBus, followBus, refHook, vehicleHook, loading, children } = props;
 
-  const darkTheme = useContext(ThemeContext)?.[0] === Theme.DARK;
+  const darkTheme = useTheme()?.[0] === Theme.DARK;
   // keeps track of open vehicle popups so we can dynamically show the user relevant shapes / stops.
   const openVehicles = useMemo(() => new Set<string>(), []);
   const [isMapSet, setIMS] = useState<boolean>();
@@ -155,15 +156,21 @@ export default function Map(props: {
     {header && <div className='text-center font-semibold fixed mt-2.5 py-5 z-10 bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-60 w-full'>
       <div className='w-full'>{header}</div>
     </div>}
+    <div className={`${loading ? 'opacity-100': 'opacity-0'} flex fixed z-20 text-center w-full h-full bg-opacity-50 bg-white dark:bg-opacity-50 dark:bg-neutral-600 pointer-events-none transition-all duration-500`}>
+      <div className='mx-auto my-auto'>
+        <Spinner shadow/>
+        <p className='italic font-semibold'>Loading data...</p>
+      </div>
+    </div>
     <div className="left-1/2 -translate-x-1/2 fixed flex z-10 bottom-20">
       <div className="mx-auto p-1.5 bg-white dark:bg-gray-500 rounded-xl flex shadow-btn">
-        <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(0)}>
+        <div className={`${mapMode === 0 ? activeMapBtn : ''} py-1 px-2 map-btn`} onClick={() => setMapMode(0)}>
           Map
         </div>
-        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 border-slate-200 dark:border-gray-400 ${mapMode === 0 ? 'border-r-2' : mapMode === 2 ? 'border-l-2' : 'border-x-2'}`} onClick={() => setMapMode(1)}>
+        <div className={`${mapMode === 1 ? activeMapBtn : ''} py-1 px-2 map-btn border-slate-200 dark:border-gray-400 ${mapMode === 0 ? 'border-r-2 !rounded-r-none' : mapMode === 2 ? 'border-l-2 !rounded-l-none' : 'border-x-0'}`} onClick={() => setMapMode(1)}>
           Hybrid
         </div>
-        <div className={`${mapMode === 2 ? activeMapBtn : ''} py-1 px-2`} onClick={() => setMapMode(2)}>
+        <div className={`${mapMode === 2 ? activeMapBtn : ''} py-1 px-2 map-btn`} onClick={() => setMapMode(2)}>
           Terrain
         </div>
       </div>
@@ -202,7 +209,7 @@ export default function Map(props: {
         // h shows street names, places, etc.
         // m shows a mapped out view
         maxZoom={20}
-        maxNativeZoom={mapMode >= 1 ? 18 : 16}
+        maxNativeZoom={mapMode >= 1 ? 14 : 20}
         url={
           mapMode >= 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
           /* mapMode is 0 */ `https://{s}.basemaps.cartocdn.com/${darkTheme ? 'dark_all' : 'light_all'}/{z}/{x}/{y}${L.Browser.retina ? '@2x' : ''}.png`
@@ -215,7 +222,7 @@ export default function Map(props: {
       />
       {mapMode === 1 && <TileLayer
         maxZoom={20}
-        maxNativeZoom={18}
+        maxNativeZoom={20}
         url='https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
         attribution='Labels &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />}
@@ -286,6 +293,7 @@ export default function Map(props: {
         <Marker
           key={"BUS" + v.number}
           position={[v.lat, v.lon]}
+          // position={fixPosition(v, now, kamHwy?.find(s => s.shapeId === v.tripInfo?.shapeId))}
           icon={new L.Icon({
             iconUrl: v.icon,
             iconSize: [zoomLvl/11 * 30, zoomLvl/11 * 30],
@@ -316,7 +324,7 @@ export default function Map(props: {
       { /* Insert path */ }
       {routePath ? 
         routePath.map((s) => {
-          const color = s.unfocused ? '#999999' : 
+          const color = s.unfocused ? '#999' : 
             s.direction === 'East' ? darkTheme ? "#f44" : "#f00" : 
                                      darkTheme ? "#3af" : "#00f";
           return <PolylineDecorator
@@ -360,7 +368,7 @@ export default function Map(props: {
       : <></>}
 
       { /* Other leaflet components (e.g. circles) that we may want to add */}
-      {otherComps}
+      {children}
     </MapContainer>
   </div>);
 }

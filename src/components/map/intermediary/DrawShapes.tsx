@@ -28,7 +28,7 @@ export function DrawShapes(props: { shids: string[]; routes: TripWithShape[]; })
   // expand the list of shapes to show route chips and names
   const [expand, setExpand] = useState<boolean>(false);
 
-  const { data: shapesAndStops } = api.gtfs.getShapesWithStopsByShIDs.useQuery({ shids });
+  const { data: shapesAndStops, isFetching } = api.gtfs.getShapesWithStopsByShIDs.useQuery({ shids });
 
   const [map, setMap] = useState<Map>();
   useEffect(() => {
@@ -47,6 +47,7 @@ export function DrawShapes(props: { shids: string[]; routes: TripWithShape[]; })
   }, [map, shapesAndStops]);
 
   return <Map
+    loading={isFetching && shapesAndStops === undefined}
     refHook={setMap}
     routePath={routes && shapesAndStops ? shapesAndStops.shapes.sort((a, b) => a.direction - b.direction).map(shape => ({
       direction: shape.direction === 1 ? 'East' : 'West',

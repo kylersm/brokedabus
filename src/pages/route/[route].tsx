@@ -36,7 +36,7 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
     api.gtfs.getRouteWithShapesByCode.useQuery({ routeCode: route });
 
   const { data: heaVehicles } = api.hea.getVehiclesTO.useQuery({ route }, {
-    refetchInterval: 15000
+    refetchInterval: 7.5 * 1000
   });
 
   if(isError) return <>
@@ -56,7 +56,7 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
 
   return <PadPage center>
     <HeadTitle>{`Route ${routeInfo.routeCode} - ${routeInfo.gtfsInfo.name}`}</HeadTitle>
-    <div className='sticky w-full top-0 pt-3 bg-white -mt-4'>
+    <div className='sticky w-full top-0 pt-3 -mt-4 bg-[var(--background)]'>
       <div className="font-bold text-2xl">
         Route <RouteChip route={{ code: routeInfo.routeCode, id: routeInfo.routeID }} inline/> {routeInfo.gtfsInfo?.name} Information
       </div>

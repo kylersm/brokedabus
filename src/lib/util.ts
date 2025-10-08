@@ -44,10 +44,15 @@ export const sortString = (a: string, b: string) => {
 
 // whether it is a city/countryexpress route (reserved for one-letters?)
 const isCE = (str: string) => str.length === 1 && isNaN(parseInt(str));
+const isLine = (str: string) => str.endsWith(" LINE");
 export const sortRouteCodes = (a: string, b: string) => {
-  if(isCE(a) && isCE(b)) return numericSorter.compare(a, b);
-  if(isCE(a)) return -1;
-  if(isCE(b)) return 1;
+  if((isCE(a) && isCE(b)) || (isLine(a) && isLine(b))) return numericSorter.compare(a, b);
+  else if(isCE(a)) return -1;
+  else if(isCE(b)) return 1;
+  // yes this is repetitive no it doesn't achieve the desired order if i merge w/ above
+  else if(isLine(a)) return -1;
+  else if(isLine(b)) return 1;
+
   return sortString(a, b);
 };
 
@@ -157,12 +162,8 @@ export const timeFromHNLString = (date: string): number => {
 // flipped around to work better with adherence
 // a is milliseconds, b is HH:MM:SS
 export const compareTimes = (a: number, b: string): number => {
-  //a.setHours(a.getHours() - 10);
-  const timeB = timeFromHNLString(b); // % (24 * 60 * 60);
-  //a.setHours(a.getHours() - 10);
-  //console.log(`${timeB} ${((a.getUTCHours() * 60 * 60) + (a.getUTCMinutes() * 60) + a.getUTCSeconds())}`);
-  //return (timeB - ((a.getUTCHours() * 60 * 60) + (a.getUTCMinutes() * 60) + a.getUTCSeconds()));
-  return timeB - a
+  const timeB = timeFromHNLString(b);
+  return timeB - a;
 }
 
 export const arrivalString = (time: Date, includeTime?: boolean): string => {
@@ -198,11 +199,26 @@ export const quantifyTimeShortened = (time: number): string => {
   const days    = Math.floor((time / 60 / 60 / 24));
   
   const base: string[] = [];
-  if(days > 0) base.push(`${days} d`);
+  if(days > 0) base.push(`${days}d`);
   if(hours > 0) base.push(`${hours} hr`);
   if(minutes > 0) base.push(`${minutes} min`);
   if(seconds > 0) base.push(`${seconds}s`);
   return base.join(" ");
+}
+
+export const quantifyTimeAsTS = (time: number): string => {
+  time = Math.round(time);
+  const seconds = time % 60;
+  const minutes = Math.floor((time / 60) % 60);
+  const hours   = Math.floor((time / 60 / 60) % 24);
+  const days    = Math.floor((time / 60 / 60 / 24));
+  
+  const base: string[] = [];
+  if(days > 0) base.push(days.toString().padStart(2, '0'));
+  if(hours > 0) base.push(hours.toString().padStart(2, '0'));
+  base.push(minutes.toString().padStart(2, '0'));
+  base.push(seconds.toString().padStart(2, '0'));
+  return base.join(":");
 }
 
 const plural = (number: number, pluralSuffix='s', singular=''): string => {
@@ -238,3 +254,5 @@ export const quantifyMiles = (miles: number): string => {
 export const sortByContext = <T>(previous: number, current: string, i: number, array: T[]) => {
   return previous + (i % 2 === 1 ? 0 : +(i % 4 === 0 ? /[A-Za-z0-9]$/ : /^[A-Za-z0-9]/).test(current))/array.length;
 }
+
+export const areArraysSimilar = <T>(a: T[], b?:T[]) => b && a.every(item => b.includes(item));

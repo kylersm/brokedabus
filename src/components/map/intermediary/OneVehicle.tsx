@@ -22,12 +22,8 @@ export function OneVehicle(props: { vehicle: string; }) {
   const { vehicle } = props;
   const Map = useMap();
 
-  const { data: vehicleInfo, isFetched } = api.hea.getVehicle.useQuery({ vehicleNum: vehicle }, {
-    refetchInterval: (r) => {
-      if (r.state.error)
-        return false;
-      else return 10000;
-    },
+  const { data: vehicleInfo, isFetched, isFetching } = api.hea.getVehicle.useQuery({ vehicleNum: vehicle }, {
+    refetchInterval: 7.5 * 1000,
     select: createPostRqVehicle
   });
 
@@ -62,6 +58,7 @@ export function OneVehicle(props: { vehicle: string; }) {
   return <>
     <HeadTitle>{`Bus ${vehicle} Map`}</HeadTitle>
     <Map
+      loading={isFetching && vehicleInfo === undefined}
       refHook={setMap}
       header={<>
         Monitoring Bus {vehicle} {vehicleInfo?.tripInfo ? <>

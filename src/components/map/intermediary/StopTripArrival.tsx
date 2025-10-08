@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import type { TripStopAIO, PolishedArrivalContainer } from "~/lib/types";
 import { HSTify } from "~/lib/util";
 import { api } from "~/utils/api";
-import { useMap, refetchInterval, DirectionKey, LastUpdated } from "../mapIntermediate";
+import { useMap, DirectionKey, LastUpdated } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
 import type { Map } from "leaflet";
+import { closestPoint } from "~/lib/GTFSBinds";
 
 /**
  * Shows an arrival at a stop for a vehicle. Accessed using /stop/[stop]/map/[trip]
@@ -23,29 +24,30 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
   const [arrivalGone, setArrivalGone] = useState<boolean>();
   const [arrivalCache, setArrivalCache] = useState<Partial<PolishedArrivalContainer>>();
 
-  const { data: shape } = api.gtfs.getShapeByShID.useQuery({ shid: arrivalCache?.arrival?.trip.shapeId ?? "" }, {
-    enabled: !!arrivalCache?.arrival
+  const shapesToUse = [];
+  if(arrivalCache?.arrival?.trip)
+    shapesToUse.push(arrivalCache.arrival.trip.shapeId);
+  if(arrivalCache?.vehicle?.tripInfo)
+    shapesToUse.push(arrivalCache.vehicle.tripInfo.shapeId);
+  const { data: shapes } = api.gtfs.getShapeByShIDs.useQuery({ shids: shapesToUse }, {
+    enabled: !!shapesToUse.length
   });
 
-  const arrival = api.hea.getArrivalIfExists.useQuery({ stop: stop.info.code, trip, vehicle: arrivalCache?.vehicle?.number }, {
-    refetchInterval: (_query) => {
-      if (arrivalGone)
-        return false;
-      else
-        return refetchInterval;
-    }
+  const arrivalQuery = api.hea.getArrivalIfExists.useQuery({ stop: stop.info.code, trip, vehicle: arrivalCache?.vehicle?.number }, {
+    refetchInterval: 7.5 * 1000,
+    enabled: !arrivalGone
   });
 
   // polished arrival and check if arrival is expired effect
   useEffect(() => {
-    if (arrival.isSuccess) {
-      if (arrival.data === undefined)
+    if (arrivalQuery.isSuccess) {
+      if (arrivalQuery.data.arrival === undefined)
         setArrivalGone(true);
       else {
-        setArrivalCache(arrival.data);
+        setArrivalCache(arrivalQuery.data);
       }
     }
-  }, [arrival.isSuccess, arrival.data, stop.info.code]);
+  }, [arrivalQuery.isSuccess, arrivalQuery.data, stop.info.code]);
 
   const [map, setMap] = useState<Map>();
   const [zoomed, setZoomed] = useState<boolean>();
@@ -65,11 +67,13 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
   }, [map, zoomed, arrivalCache, stop.info]);
 
   return <Map
+    loading={arrivalQuery.isFetching && arrivalQuery.isPending}
     refHook={setMap}
     header={<>
       {arrivalCache?.vehicle ? <>Monitoring Bus {arrivalCache.vehicle.number} for Stop {stop.info.code}</> : 'No GPS to follow'}
       {arrivalCache?.arrival && `, ${arrivalCache.arrival.departing ? "depart" : "arriv"}ing at ${HSTify(arrivalCache.arrival.stopTime, true)}`}
-      {arrivalCache?.arrival?.status === "Canceled" ? <div className="text-red-500 font-bold">ARRIVAL CANCELED</div> : 
+      {arrivalGone ? <div className="text-amber-500 font-bold">BUS IS / HAS ALREADY ARRIVED</div> :
+      arrivalCache?.arrival?.status === "Canceled" ? <div className="text-red-500 font-bold">ARRIVAL CANCELED</div> : 
       arrivalCache?.arrival?.status === "Uncanceled" ? <div className="text-green-500 font-bold">TRIP IS UNCANCELED</div> : 
       <DirectionKey/>}
       <LastUpdated />
@@ -87,9 +91,24 @@ export function StopTripArrival(props: { stop: TripStopAIO; trip: string; }) {
       location: [stop.info.lat, stop.info.lon],
       popup: <StopPopup stop={stop.info} noGPS={!arrivalCache?.vehicle} />
     }]}
-    routePath={shape && arrivalCache ? [{
-      direction: shape.direction === 1 ? 'East' : 'West',
-      unfocused: arrivalCache?.arrival?.status === "Canceled",
-      routePath: shape
-    }] : []} />;
+    routePath={shapes && arrivalCache ? shapes.map((s) => {
+      let shapes = s.shapes;
+      if(arrivalCache.vehicle && (
+        /* & this is the shape */
+        shapes.length && 
+        s.shapeId === arrivalCache.vehicle?.tripInfo?.shapeId)) {
+          const closest = closestPoint(shapes, [arrivalCache.vehicle.lat, arrivalCache.vehicle.lon]);
+          shapes = shapes.filter(shape => shape.sequence >= closest.sequence);
+          shapes.unshift({
+            lat: arrivalCache.vehicle.lat, lon: arrivalCache.vehicle.lon,
+            sequence: 0
+          });
+      }
+
+      return {
+        direction: s.direction === 1 ? 'East' : 'West',
+        routePath: { ...s, shapes },
+      }
+    }) : []}
+  />;
 }
