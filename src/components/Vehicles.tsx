@@ -80,8 +80,8 @@ export default function Vehicles(props: {
 
   return <div>
     <div className="flex w-fit gap-x-2 mx-auto mb-3">
-      <label><input type="radio" name="view" className="mr-1" checked={view === View.ITEMS} onClick={() => setView(View.ITEMS)}/>Items</label>
-      <label><input type="radio" name="view" className="mr-1" checked={view === View.LIST} onClick={() => setView(View.LIST)}/>List</label>
+      <label><input type="radio" name="view" className="mr-1" checked={view === View.ITEMS} onChange={() => setView(View.ITEMS)}/>Items</label>
+      <label><input type="radio" name="view" className="mr-1" checked={view === View.LIST} onChange={() => setView(View.LIST)}/>List</label>
     </div>
     {filteredVehicles ? 
     filteredVehicles.length ? 
