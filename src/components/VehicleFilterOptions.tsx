@@ -35,7 +35,9 @@ export default function VehicleFilterOptions(props: {
     filters, setFilters: _setFilters } = props;
 
   const [showRF, setRF] = useState<boolean>(true);
-  const { data: allRoutes } = api.gtfs.getAllRouteSuperficial.useQuery();
+  const { data: allRoutes } = api.gtfs.getAllRouteSuperficial.useQuery(void 0, {
+    select: (data) => data.filter(d => d.name !== 'SKYLINE')
+  });
 
   // close when escape pressed
   useEffect(() => {
@@ -59,8 +61,8 @@ export default function VehicleFilterOptions(props: {
   const headsignColorKeys = Object.keys(HeadsignColor) as (keyof typeof HeadsignColor)[];
 
   return <>
-    <div className={`${showFilter ? 'block opacity-25' : 'hidden opacity-0'} transition delay-150 duration-300 absolute w-full h-full bg-black dark:bg-white z-[45]`} onClick={() => setSF(false)}/>
-    <div className={`${showFilter ? 'block opacity-100' : 'hidden opacity-0'} transition delay-150 duration-300 ease-in-out absolute w-[calc(100%-2*3.5rem)] h-[calc(100%-3rem-2*3.5rem)] z-[46] m-14 py-3 pb-10 px-5 md:px-12 bg-[var(--background)] shadow-2xl shadow-gray-500 rounded-lg overflow-y-scroll [&_input[type=radio]]:mr-1`}>
+    <div className={`${showFilter ? 'block opacity-25' : 'opacity-0 pointer-events-none'} transition delay-150 duration-300 absolute w-full h-full bg-black dark:bg-white z-[45]`} onClick={() => setSF(false)}/>
+    <div className={`${showFilter ? 'block opacity-100' : 'opacity-0 pointer-events-none'} transition delay-150 duration-300 ease-in-out  absolute w-[calc(100%-2*3.5rem)] h-[calc(100%-3rem-2*3.5rem)] z-[46] m-14 py-3 pb-10 px-5 md:px-12 bg-[var(--background)] shadow-2xl shadow-gray-500 rounded-lg overflow-y-scroll [&_input[type=radio]]:mr-1`}>
       <div className="mx-auto w-full text-center overflow-hidden">
         <div className="absolute top-2 right-3 cursor-pointer text-red-500 font-bold" onClick={() => setSF(false)}>X</div>
         <div className="font-bold text-2xl">
@@ -100,7 +102,7 @@ export default function VehicleFilterOptions(props: {
           </div>
         </div>
 
-        <div className="font-bold text-2xl mt-5 md:mt-0" onClick={() => setRF(!showRF)}>
+        <div className="font-bold text-2xl mt-5 md:mt-0 cursor-pointer" onClick={() => setRF(!showRF)}>
           Route Filters <div title={'Click to ' + (showRF ? 'hide' : 'show') + ' route filters'} className={`${ExpandArrowClass} ${showRF ? '' : 'rotate-180'}`}>V</div>
         </div>
 
@@ -136,7 +138,7 @@ export default function VehicleFilterOptions(props: {
                   filters.routeIdFilters.concat(r._id)})
             }/> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
           </label>
-        )}</div></> : <p className="mb-4 italic">Route filters are currently hidden.</p>}
+        )}</div></> : <p className="mb-4 italic">Route filters are currently hidden. Click on the title to re-expand.</p>}
 
         <div className="mx-auto w-fit space-y-3">
           <div className="font-bold text-2xl">
@@ -234,7 +236,7 @@ export default function VehicleFilterOptions(props: {
                 All {Manufacturer[man as keyof typeof Manufacturer]}s
               </p>
               {Object.entries(VehicleInfo).filter(v => v[1].manufacturer === Manufacturer[man as keyof typeof Manufacturer]).map(([k, vi]) => 
-                <p key={vi.manufacturer+vi.desc+vi.length+vi.fuelType} className="flex gap-2 pr-3 h-fit w-full">
+                <label key={vi.manufacturer+vi.desc+vi.length+vi.fuelType} className="flex gap-2 pr-3 h-fit w-full">
                   <input type="checkbox" 
                     disabled={!busInfoValues.filter(v => v.model === vi).some(v => 
                       (!filters.headsignColor || filters.headsignColor?.includes(v.headsignColor)) &&
@@ -250,7 +252,7 @@ export default function VehicleFilterOptions(props: {
                       })
                     }
                   /> {vi.shortDesc} {vi.length}{"'"}
-                </p>
+                </label>
               )}
             </div>)}
           </div>
