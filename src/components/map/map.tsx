@@ -209,7 +209,7 @@ export default function Map(props: {
         // h shows street names, places, etc.
         // m shows a mapped out view
         maxZoom={20}
-        maxNativeZoom={16}
+        maxNativeZoom={mapMode >= 1 ? 14 : 20}
         url={
           mapMode >= 1 ? 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 
           /* mapMode is 0 */ `https://{s}.basemaps.cartocdn.com/${darkTheme ? 'dark_all' : 'light_all'}/{z}/{x}/{y}${L.Browser.retina ? '@2x' : ''}.png`
@@ -222,7 +222,7 @@ export default function Map(props: {
       />
       {mapMode === 1 && <TileLayer
         maxZoom={20}
-        maxNativeZoom={18}
+        maxNativeZoom={20}
         url='https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png'
         attribution='Labels &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />}
