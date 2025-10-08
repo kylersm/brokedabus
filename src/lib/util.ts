@@ -44,10 +44,15 @@ export const sortString = (a: string, b: string) => {
 
 // whether it is a city/countryexpress route (reserved for one-letters?)
 const isCE = (str: string) => str.length === 1 && isNaN(parseInt(str));
+const isLine = (str: string) => str.endsWith(" LINE");
 export const sortRouteCodes = (a: string, b: string) => {
-  if(isCE(a) && isCE(b)) return numericSorter.compare(a, b);
-  if(isCE(a)) return -1;
-  if(isCE(b)) return 1;
+  if((isCE(a) && isCE(b)) || (isLine(a) && isLine(b))) return numericSorter.compare(a, b);
+  else if(isCE(a)) return -1;
+  else if(isCE(b)) return 1;
+  // yes this is repetitive no it doesn't achieve the desired order if i merge w/ above
+  else if(isLine(a)) return -1;
+  else if(isLine(b)) return 1;
+
   return sortString(a, b);
 };
 

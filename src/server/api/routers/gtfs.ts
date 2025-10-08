@@ -743,7 +743,8 @@ export const GTFSRouter = createTRPCRouter({
   getAllRouteSuperficial: publicProcedure
     .query(async (): Promise<GTFS.PolishedRoute[]> => {
       const feed = await getGTFS();
-      const routes = feed.routes;
+      // idk why but GTFS feed has a U, U LINE, W, W LINE route. doesn't make sense to have U/W as they aren't associated with the stops.
+      const routes = feed.routes.filter(r => r.route_short_name !== 'U' && r.route_short_name !== 'W');
       return routes.map(GTFS.makePolishedRoute);
     }),
   getCalendarOverview: publicProcedure

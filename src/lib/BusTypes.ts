@@ -8,7 +8,7 @@ import { ActiveType, SortType, type VehicleFiltering } from "~/components/Vehicl
  * =======
  * 
  * This needs to be manually updated every so often because there isn't an API dedicated for this.
- * Last updated 25/04/20
+ * Last updated 25/10/07
  * 
  */
 
@@ -16,7 +16,10 @@ import { ActiveType, SortType, type VehicleFiltering } from "~/components/Vehicl
 export const routeTrafficTypes = {
   // #B97C2A
   urban: [
-    'A',
+    'A',      // expires Oct 16th
+    'A LINE', // Skyline segment 2 rt.    I think the colors chosen for these lines are quite harsh except for U line.
+    'U LINE', // Skyline segment 2 rt.
+    'W LINE', // Skyline segment 2 rt.
     '1',
     '1L',
     '2',
@@ -25,7 +28,7 @@ export const routeTrafficTypes = {
     '4',
     '8',
     '13',
-    '20',
+    '20',     // expires Oct 16th
     '46'
   ],
   // #2E6CA9
@@ -49,12 +52,14 @@ export const routeTrafficTypes = {
     '5',   '6',   '7',   '10',  '14',  '23',
     '32',  '41',  '43',  '44',  '47',  '69',
     '102', '122', '123', '151', '200', '301',
-    '303', '307', '401', '402', '403', '411',
+    '307', '331', '401', '402', '403', '411',
     '414', '415', '416', '433', '444', '461',
     '501', '503', '504', '511', '512', '521',
     '531', '532', '533', '535', '541', '542',
     '544', '545', '551', '552', '651', '671',
-    '672', '673', '674'
+    '672', '673', '674',
+
+    '303'  // Replaced with route 331 for segment 2
   ]
   // we probably dont need to list "express routes"
 }
@@ -65,7 +70,9 @@ export const colors = {
   local:    "#699F61",    
   commute:  "#B39EAA",
   
-  rail:     "#142E57"
+  rail:     "#142E57",
+
+  UHM:      "#328F16"
 };
 
 export const brightenColor = (color: string, level=0x333333): string => {
@@ -81,6 +88,8 @@ export const brightenColor = (color: string, level=0x333333): string => {
 export const getColorFromRoute = (route: SuperficialRoute): string => {
   if(route.id === "181" || route.code.toLowerCase() === "skyline")
     return colors.rail;
+  else if(route.code === "U LINE")
+    return colors.UHM;
   else if(routeTrafficTypes.urban.includes(route.code))
     return colors.urban;
   else if(routeTrafficTypes.suburban.includes(route.code))
@@ -882,7 +891,7 @@ export const ArticRoutes = [
 
   'W1', 'W2', 'W3',
   '81',
-  '91', '97',
+  '91', '97', '421'
 ];
 
 export const ElectricRoutes = [
@@ -940,13 +949,15 @@ export const KalihiRoutes = [
   '2', '2L',
   '3', '4', '5', '6', '7', '8',
 
+  'A', 'U', 'W',
+
   '10', '13', '14', 
   '20', '23', '32',
-  '60', '61', '65', '66', '67', '69',
+  '61', '66', '67', '69',
 
   '102', '122', '123', '151', 
   '200', '234', 
-  '301', '302', '303', '306', '307',
+  '301', '302', '303', '306', '307', '331',
   '551', '552',
   '651', '671', '672', '673', '674',
 
@@ -979,7 +990,7 @@ export const PearlCityRoutes = [
   '60', '65',
 
   '401', '402', '403', '411', '413',
-  '414', '415', '416', '433', '444',
+  '414', '415', '416', '421', '433', '444',
   '461', '501', '503', '504', '511',
   '512', '521', '531', '532', '533',
   '535', '541', '542', '544', '545',
