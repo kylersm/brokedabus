@@ -502,6 +502,73 @@ export default function Headsigns() {
             />
           </Headsign>
         </Griddy>
+        <Header>A LINE</Header>
+        <Griddy>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#0f0]', fill: 'text-[#fff]', outline: '#000'}} half>A LINE</RouteNumber>
+            <RouteText
+              fontSize={3}
+              lines={[
+                [COLOR.WHITE, Math.floor(anim / 3) % 2 === 0 ? "AHUA" : "LAGOON DRIVE"],
+                [COLOR.WHITE, "SKYLINE STATION", 2]
+              ]}
+            />
+          </Headsign>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#0f0]', fill: 'text-[#fff]', outline: '#000'}} half>A LINE</RouteNumber>
+            <RouteText
+              fontSize={2}
+              lines={[
+                [COLOR.WHITE, "U.H. MANOA Via"],
+                [COLOR.WHITE, "DOWNTOWN HNL"]
+              ]}
+            />
+          </Headsign>
+        </Griddy>
+        <Header>U LINE</Header>
+        <Griddy>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#328F16]', fill: 'text-[#fff]', outline: '#000'}} half>U LINE</RouteNumber>
+            <RouteText
+              fontSize={3}
+              lines={[
+                [COLOR.WHITE, "U.H. MANOA"],
+                [COLOR.WHITE, "VIA H-1 FREEWAY", 2]
+              ]}
+            />
+          </Headsign>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#328F16]', fill: 'text-[#fff]', outline: '#000'}} half>U LINE</RouteNumber>
+            <RouteText
+              fontSize={3}
+              lines={[
+                [COLOR.WHITE, Math.floor(anim / 3) % 2 === 0 ? "AHUA" : "LAGOON DRIVE"],
+                [COLOR.WHITE, Math.floor(anim / 3) % 3 === 0 ? "SKYLINE STATION" : "VIA H-1 FREEWAY", 2]
+              ]}
+            />
+          </Headsign>
+        </Griddy>
+        <Header>W LINE</Header>
+        <Griddy>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#0FF]', fill: 'text-[#fff]', outline: '#000'}} half>W LINE</RouteNumber>
+            <RouteText
+              fontSize={5}
+              lines={[
+                [COLOR.WHITE, "WAIKIKI"],
+              ]}
+            />
+          </Headsign>
+          <Headsign>
+            <RouteNumber invert={{ bg: 'bg-[#0FF]', fill: 'text-[#fff]', outline: '#000'}} half>W LINE</RouteNumber>
+            <RouteText
+              fontSize={3}
+              lines={[
+                [COLOR.WHITE, "HNL AIRPORT"]
+              ]}
+            />
+          </Headsign>
+        </Griddy>
         <Header>Route 54</Header>
         <Griddy>
           <Headsign>
@@ -839,18 +906,23 @@ function Griddy(props: PropsWithChildren) {
 
 function Headsign(props: PropsWithChildren & { unsure?: boolean; }) {
   return (
-    <div className={`flex h-20 w-[24rem] ${props.unsure ? "bg-gray-600" : "bg-black"} px-2`} title={props.unsure ? "My guess (No photo, or could be animated)" : "Verified w/ pic or video"}>{props.children}</div>
+    <div className={`flex h-20 w-[24rem] ${props.unsure ? "bg-gray-600" : "bg-black"} px-2`} title={props.unsure ? "My guess (No photo, or could be animated)" : "Verified w/ pic or video"}>
+      {props.children}
+    </div>
   );
 }
 
-function RouteNumber(props: { invert?: boolean } & PropsWithChildren) {
+function RouteNumber(props: { invert?: boolean | { outline: string; fill: string; bg: string; }; half?: boolean; } & PropsWithChildren) {
   return (
     <div
-      className={`${props.invert ? "bg-[#ffff00] min-w-[3.75rem] text-center" : "text-[#ffff00]"} my-auto text-6xl font-bold`}
+      className={`${
+        (typeof props.invert === "boolean" && props.invert) ? "bg-[#ffff00] min-w-[3.75rem] text-center" : 
+        (typeof props.invert === "object" && 'outline' in props.invert) ? `${props.invert.fill} ${props.invert.bg}` : 
+        "text-[#ffff00]"} ${props.half && "w-1/2 text-center"} my-auto text-6xl font-bold`}
       style={
         props.invert
           ? {
-              WebkitTextStroke: "2px #6df",
+              WebkitTextStroke: `2px ${(typeof props.invert === "object" && 'outline' in props.invert) ? props.invert.outline : '#6df'}`,
             }
           : {}
       }
@@ -861,6 +933,7 @@ function RouteNumber(props: { invert?: boolean } & PropsWithChildren) {
 }
 
 enum COLOR {
+  WHITE = "text-[#eef]",
   YELLOW = "text-[#ff0]",
   RED = "text-[#f66]",
   MAGENTA = "text-[#d5d]",
