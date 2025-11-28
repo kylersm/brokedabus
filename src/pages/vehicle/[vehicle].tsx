@@ -18,6 +18,7 @@ import HeadTitle from '~/components/HeadTitle';
 import PadPage from '~/components/templates/PadPage';
 import GenericTable from '~/components/GenericTable';
 import RemoveUnderline from '~/components/RemoveUnderline';
+import Collapser from '~/components/Collapser';
 
 const staleColor = '#999999';
 const isArrivalFresh = (arrived: number) => arrived + 65 >= 0;
@@ -52,7 +53,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
   const vehicleModelInfo = getVehicleInformation(vehicleInfo.number);
 
   const difference = stops?.some(s => (s.trip.arrives - now) > (12 * 60 * 60)) ? 24 * 60 * 60 : 0;
-  const color = getColorFromRoute({ code: vehicleInfo.block?.trips.find(t => t.trips.includes(vehicleInfo.trip ?? ''))?.routeCode ?? '' });
+  const color = getColorFromRoute({ code: tripInfo?.routeCode ?? '' });
   const brightened = brightenColor(color);
 
   return (<PadPage center>
@@ -82,7 +83,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
     </div>}
 
     <b className='mt-5 mb-2 block text-2xl'>Map Info</b>
-    <div className='flex gap-5 mx-auto w-fit'>
+    <div className='flex gap-5 mx-auto w-fit mb-5'>
       <Link className='link' href={{
         pathname: "/vehicle/[vehicle]/map",
         query: { vehicle: vehicleInfo.number }
@@ -97,8 +98,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
       }}>See route<RemoveUnderline> <RouteChip route={{ code: tripInfo?.routeCode ?? "" }} inline/> </RemoveUnderline>info</Link>
     </div>
 
-    {vehicleInfo && stops && <>
-      <b className='mt-5 mb-2 block text-2xl'>Stop Sequence</b>
+    {vehicleInfo && stops && <Collapser title='Stop Sequence' hideMsg='Live stop list is hidden.'>
       <Button onClick={() => setPS(!seePrevStops)}>
         {seePrevStops ? "Hide" : "Show"} previous stops
       </Button>
@@ -110,7 +110,8 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
               return { 
                 ...s,
                 trip: { ...s.trip, arrives },
-                color: !isArrivalFresh(arrives) ? staleColor : arrives < 0 ? color : brightened 
+                color: !isArrivalFresh(arrives) ? staleColor : 
+                          arrives < 0 ? color : brightened 
               };
             })
             .filter((s, i) => seePrevStops || i === stops.length - 1 || isArrivalFresh(s.trip.arrives))
@@ -151,7 +152,7 @@ const VehicleIntermediary: NextPage<{vehicle:string}> = ({ vehicle }) => {
           }
         </ol>
       </div>
-    </>}
+    </Collapser>}
 
     {vehicleInfo?.block && <>
       <b className='mt-5 block text-2xl'>Block Info ({quantifyTime(Math.max(...vehicleInfo.block.trips.map(i=>i.lastDeparts)) - Math.min(...vehicleInfo.block.trips.map(i=>i.firstArrives)))})</b>
