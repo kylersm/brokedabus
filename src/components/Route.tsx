@@ -18,24 +18,27 @@ export default function RouteChip(props: { route: SuperficialRoute; inline?: boo
   // check if it is a city/country express route
   const isCExpress = CExpress.includes(props.route.code.toUpperCase());
   const isLine = props.route.code.toUpperCase().endsWith(" LINE");
+  const isLimited = props.route.code.toUpperCase().endsWith("L");
   // make 'w' lowercase except for W line
   const isWaikiki = props.route.code.toUpperCase().startsWith('W') && !isLine;
 
-  let code = props.route.code;
+  let code: string | React.JSX.Element = props.route.code;
   if(isSkyline)
     code = "SKY";
   else if(isWaikiki)
     code = code.toLowerCase();
   else if(isLine)
-    code = code.slice(0, code.length - " LINE".length);
+    code = code.slice(0, -" LINE".length);
+  else if(isLimited)
+    code = <>{code.slice(0, -1)}<span className="text-sm b">L</span></>;
 
   return <div 
     className={`routechip ${props.inline ? "w-fit inline py-0.5" : "w-full max-w-16"} ${props.inactive ? "italic" : "font-semibold"}`} 
     style={{ backgroundColor: getColorFromRoute(props.route) }}
   >
     {isCExpress || isLine ? <div className="text-[75%] italic inline">三</div> : null}
-    <div className={`${isCExpress || isLine ? "italic" : ""} inline`}>
+    {<div className={`${isCExpress ? "italic" : ''} ${isLine ? "underline" : ''} inline`}>
       {props.text ?? code}
-    </div>
+    </div>}
   </div>;
 }

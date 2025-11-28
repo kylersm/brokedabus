@@ -15,6 +15,7 @@ import HeadTitle from "~/components/HeadTitle";
 import Spinner from "~/components/Spinner";
 import HalfTable from "~/components/HalfTable";
 import { sortString } from "~/lib/util";
+import Collapser from "~/components/Collapser";
 
 const GetListOfShapes = (routes: PolishedHEARoute[]) => routes.sort((a, b) => sortString(a.shapeID, b.shapeID)).map(r => <ListItem 
   key={r.shapeID}
@@ -67,12 +68,16 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
     </div>
 
     <div className="inline-block md:flex mx-auto md:w-fit mt-3">
-      <HalfTable caption={<>Westbound</>}>
-        {GetListOfShapes(westbound)}
-      </HalfTable>
-      <HalfTable caption={<>Eastbound</>}>
-        {GetListOfShapes(eastbound)}
-      </HalfTable>
+      <Collapser title="Westbound" addHr hideMsg="Westbound routes are hidden.">
+        <HalfTable>
+          {GetListOfShapes(westbound)}
+        </HalfTable>
+      </Collapser>
+      <Collapser title="Eastbound" addHr hideMsg="Eastbound routes are hidden.">
+        <HalfTable>
+          {GetListOfShapes(eastbound)}
+        </HalfTable>
+      </Collapser>
     </div>
 
     {isSkylineRoute ? <div className="font-bold text-xl italic mb-3">Skyline trains do not have GPS.</div> :<>

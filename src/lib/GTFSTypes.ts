@@ -193,13 +193,16 @@ export interface PolishedBlockTrip extends Types.IdentifiableTrip {
   lastDeparts: number;
   active?: boolean;
 }
+
 export interface UnifiedCalendarInfo {
   trips: Types.IdentifiableTrip[];
   time: number;
 }
+
 export interface CalendarInfoMini {
   trips: Types.SuperficialTrip[];
 }
+
 export interface CalendarInfo {
   trip: Types.SuperficialTrip;
   times: number[];

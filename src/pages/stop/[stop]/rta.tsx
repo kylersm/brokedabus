@@ -116,17 +116,93 @@ const MetersToMiles = 1 / 1609.344;
 const RTAEntry = (props: { arrival: PolishedArrival, vehicle?: TripVehicle, stop: PolishedStop, now: number }) => {
   const { arrival, vehicle, stop, now } = props;
 
+  // used to say that the bus comes at the time specified, e.g. 11:15 rather than quantifying the amount of time before the stop time, e.g. 1 hour 3 minutes
   const arrivalLessThanHour = (arrival.stopTime.getTime() - now) < 60 * 60 * 1000;
-  const isAtStop = arrival.distance ? (arrival.distance * MetersToMiles) < 0.5 : false;
-  const isLeaving = ((arrival.stopTime.getTime() - now) / 1000) <= 45;
+  // If distance to stop is < 0.5 miles
+  const isAtStop = (arrival.distance * MetersToMiles) < 0.5;
+  // At most 45 seconds to the stop time, used to say 'arrives/departs now' instead of 'arrives in 30 seconds'
+  const isLeaving =           (arrival.stopTime.getTime() - now) <= 45 * 1000;
+  // <5 minutes before the bus comes
+  const isApproaching =       (arrival.stopTime.getTime() - now) < 5 * 60 * 1000;
+
+  let imageSrc = "/arrival.png";
+  let imageDesc = "Bus is coming";
+
+  let title: React.JSX.Element | string = '';
+  const leaveTimeStr = arrivalString(arrival.stopTime, !arrival.departing).toLowerCase();
+  const headsign = <><RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}</>;
+  let eventTime: string | null = `${arrival.departing ? 'Departs' : 'Arrives'} at ${HSTify(arrival.stopTime, true)}`;
+  let distance: string | null = null;
+  let planned: string | null = null;
+
+  /**
+   * Bus xxx arrives/departs in <time>
+   * <route chip>
+   * Arrives/Departs at <time>
+   * <Distance to stop>
+   */
+  if(arrivalLessThanHour) {
+    title = leaveTimeStr.toLowerCase();
+    // change to orange icon; no further change needed
+    imageSrc = "/arrival.png";
+    imageDesc = "Bus is coming";
+    if(isApproaching) {
+      imageSrc = "/arriving.png";
+      imageDesc = "Bus is approaching";
+      /**
+       * Bus xxx arrives/departs now
+       * <route chip>
+       * Arrives/Departs at <time>
+       * <Distance to stop>
+       */
+      if(isLeaving) {
+        title = (arrival.departing ? 'departs' : 'arrives') + ' now';
+      }
+    }
+  } else 
+  /**
+   * Bus xxx was canceled 
+   * <route chip>
+   * Arrives/Departs at <time>
+   * <Distance to stop>
+   */
+  if(arrival.status === "Canceled") {
+    // title = <></>;
+    imageSrc = "/canceled.png";
+    imageDesc = "Bus was canceled";
+  } else {
+    /**
+     * Bus xxx arrives/departs at <time>
+     * <route chip>
+     * <Distance to stop>
+     */
+    title = (arrival.departing ? 'departs' : 'arrives') + ` at ${HSTify(arrival.stopTime, true)}`
+  }
+
+
+  if(vehicle) {
+    
+    if(isAtStop)
+      distance = "Already at stop";
+    else
+      distance = `${quantifyMiles(arrival.distance * MetersToMiles)} away`;
+    title = `Bus ${vehicle.number} ${title}`;
+  } else {
+    title = `Scheduled bus ${title}`;
+    imageSrc = "/scheduled.png";
+    imageDesc = "Bus lacks GPS";
+    eventTime = null;
+    if(arrivalLessThanHour)
+      planned = `Planned ${arrival.departing ? 'departure' : 'arrival'} for ${HSTify(arrival.stopTime, true)}`
+  }
 
   return <ListItem
     emoji={<Image 
       className='min-w-14 max-w-14'
-      src={arrival.status === "Canceled" ? "/canceled.png" : vehicle === undefined ? "/scheduled.png" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "/arriving.png" : "/arrival.png"}
+      src={imageSrc}
       width={100} height={100}
-      title={vehicle === undefined ? "Bus lacks GPS" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "Bus is approaching" : "Bus is coming"}
-      alt={vehicle === undefined ? "Bus lacks GPS" : arrival.stopTime.getTime() - Date.now() < 60000 * 5 ? "Bus is approaching" : "Bus is coming"}
+      title={imageDesc}
+      alt={imageDesc}
     />}
     href={{
       pathname: "/stop/[stop]/map/[trip]",
@@ -135,29 +211,14 @@ const RTAEntry = (props: { arrival: PolishedArrival, vehicle?: TripVehicle, stop
   >
     <span className={`${arrival.estimated === "GPS" ? "font-bold" : "italic"}`}>
       <p className="text-xl">
-        {
-          arrival.status === "Canceled" ? 
-            <>{vehicle === undefined ? 'Scheduled Bus' : `Bus ${vehicle.number}`} <span className='text-red-500 font-bold not-italic'>CANCELLED</span></> 
-          : ((vehicle === undefined ? 
-            arrivalLessThanHour ? `Scheduled Bus `/* in .. minutes */ :
-            `Scheduled Bus for ${HSTify(arrival.stopTime, true)}` : 
-            `Bus ${vehicle.number} `) + (isLeaving ? `is ${arrival.departing ? 'departing' : 'arriving'} now` : arrivalLessThanHour ? arrivalString(arrival.stopTime) : ''))
-        }
+        {title} {arrival.status === "Canceled" && <span className='text-red-500 font-bold not-italic'>CANCELLED</span>}
       </p>
-      <RouteChip route={{ code: arrival.trip.routeCode, id: arrival.trip.routeId }} inline/> {arrival.trip.headsign}
+      {headsign}
     </span><br/>
 
-    {
-      vehicle !== undefined ?
-        <>
-          {arrival.departing ? 'Departs' : 'Arrives'} at {HSTify(arrival.stopTime, true)}<br/>
-          <i>{isAtStop ?  "Already at stop" : arrival.distance > 0 ? `${quantifyMiles(arrival.distance * MetersToMiles)} away` : ''}</i>
-        </>
-      :
-        arrivalLessThanHour ? <>
-          {arrival.departing ? 'Departs' : 'Arrives'} at {HSTify(arrival.stopTime, true)}
-        </> : <>Planned {arrival.departing ? 'departure' : 'arrival'} {arrival.status === "Canceled" ? `for ${HSTify(arrival.stopTime, true)}` : ''}</>
-    }
+    {eventTime && <>{eventTime}<br/></>}
+    {/* distance or planned time */}
+    {distance}{planned}
   </ListItem>
 };
 

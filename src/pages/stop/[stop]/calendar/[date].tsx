@@ -16,7 +16,8 @@ import Button from "~/components/Button";
 import HalfTable from "~/components/HalfTable";
 import PadPage from "~/components/templates/PadPage";
 import { api } from "~/utils/api";
-import { ContainerClass, ExpandArrowClass } from "~/components/VehicleFilterOptions";
+import { ContainerClass } from "~/components/VehicleFilterOptions";
+import Collapser from "~/components/Collapser";
 
 const clocks = [
   '🕛', '🕧', 
@@ -36,8 +37,6 @@ const clocks = [
 const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => {
 
   const [seePast, setSP] = useState<boolean>(false);
-  const [seeAM, setSAM] = useState<boolean>(true);
-  const [seePM, setSPM] = useState<boolean>(true);
 
   const [seeRouteFilters, setSRF] = useState<boolean>(false);
   const [routeFilters, setRF] = useState<string[]>();
@@ -124,39 +123,34 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
     {routeFilters?.length && <div>{routeFilters.length} filter{routeFilters.length > 1 ? 's' : ''} applied.</div>}
 
     {!isLoading ? calendar.length ? calendarWithFilters.length ? <div className={`${!((AM.length / AM.length) ^ (PM.length / PM.length) /* check to see if one or other is empty so we can center the one that isn't empty */) ? "md:flex" : ''} inline-block mt-5`}>
-      {AM.length ? <HalfTable caption={
-        <div onClick={() => setSAM(!seeAM)} className="cursor-pointer">
-          Morning (AM) <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' morning times'} className={ExpandArrowClass + (seeAM ? '' : ' rotate-180')}>V</div>
-          <br/><hr/>
-        </div>
-      }>
-        {!seeAM ? <tr><td className="text-center italic">Times are hidden. Click arrow to re-expand.</td></tr> : AM.map(r => 
-          <ListItem
-            key={r.time}
-            topEmoji
-            emoji={<span className="text-4xl">{clocks[((Math.floor(r.time / (60 * 60)) % 12) * 2 + Math.round(r.time / 60 % 60 / 30)) % 24]}</span>}
-          >
-            <b className="text-xl">{HSTify(new Date((r.time + HST_UTC_OFFSET) * 1000), true)}</b><br/>
-            {<ListTrips trips={r.trips} key={r.time.toString()} hideRoutes/>}
-          </ListItem>)}
-      </HalfTable> : <></>}
+      {AM.length ? <Collapser title="Morning (AM)" addHr hideMsg="Morning times are hidden.">
+        <HalfTable>
+          {AM.map(r => 
+            <ListItem
+              key={r.time}
+              topEmoji
+              emoji={<span className="text-4xl">{clocks[((Math.floor(r.time / (60 * 60)) % 12) * 2 + Math.round(r.time / 60 % 60 / 30)) % 24]}</span>}
+            >
+              <b className="text-xl">{HSTify(new Date((r.time + HST_UTC_OFFSET) * 1000), true)}</b><br/>
+              {<ListTrips trips={r.trips} key={r.time.toString()} hideRoutes/>}
+            </ListItem>)}
+        </HalfTable>
+      </Collapser> : <></>}
 
-      {PM.length ? <HalfTable caption={
-        <div onClick={() => setSPM(!seePM)} className="cursor-pointer">
-          Afternoon (PM) & Tomorrow <div title={'Click to ' + (seeAM ? 'hide' : 'show') + ' afternoon times'} className={ExpandArrowClass + (seePM ? '' : ' rotate-180')}>V</div>
-          <br/><hr/>
-        </div>
-      }>
-        {!seePM ? <tr><td className="text-center italic">Times are hidden. Click arrow to re-expand.</td></tr> : PM.map(r => 
-          <ListItem
-            key={r.time}
-            topEmoji
-            emoji={<span className="text-4xl">{clocks[((Math.floor(r.time / (60 * 60)) % 12) * 2 + Math.round(r.time / 60 % 60 / 30)) % 24]}</span>}
-          >
-            <b className="text-xl">{HSTify(new Date((r.time + HST_UTC_OFFSET) * 1000), true)}</b><br/>
-            {/* routeFilters?.length === 1 || */<ListTrips trips={r.trips} key={r.time.toString()} hideRoutes/>}
-          </ListItem>)}
-      </HalfTable> : <></>}
+
+      {PM.length ? <Collapser title="Afternoon (PM)" addHr hideMsg="Morning times are hidden.">
+        <HalfTable>
+          {PM.map(r => 
+            <ListItem
+              key={r.time}
+              topEmoji
+              emoji={<span className="text-4xl">{clocks[((Math.floor(r.time / (60 * 60)) % 12) * 2 + Math.round(r.time / 60 % 60 / 30)) % 24]}</span>}
+            >
+              <b className="text-xl">{HSTify(new Date((r.time + HST_UTC_OFFSET) * 1000), true)}</b><br/>
+              {<ListTrips trips={r.trips} key={r.time.toString()} hideRoutes/>}
+            </ListItem>)}
+        </HalfTable>
+      </Collapser> : <></>}
     </div> :
     <i>No routes are selected in filters.</i> :
     <i>No scheduled trips for this date.</i> :

@@ -16,6 +16,7 @@ export interface HEAVehicle extends Vehicle {
 
 export interface TripVehicle extends Vehicle {
   tripInfo?: PolishedBlockTrip;
+  blockName?: string;
 }
 
 export interface PolishedVehicle extends HEAVehicle {

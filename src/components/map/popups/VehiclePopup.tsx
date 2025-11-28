@@ -79,7 +79,7 @@ export default function VehiclePopup(props: {
           areArraysSimilar(a.trip.trips, blocks?.next?.trips) ? <div><span className={style}>Next trip</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div> : 
           <div><span className={style}>As</span> <RouteChip route={{ code: a.trip.routeCode, id: a.trip.routeId }} inline/> {a.trip.headsign}</div>
         }
-        <div className="font-bold text-center">{`${a.departing ? "Departing" : "Arriving"} ${arrivalString(a.stopTime)}`}</div>
+        <div className="font-bold text-center">{arrivalString(a.stopTime, !a.departing)}</div>
         <div className="italic text-center">{quantifyMiles(a.distance / 1603.344)} away from stop</div><br/>
       </div>;
     })}
@@ -108,7 +108,6 @@ export default function VehiclePopup(props: {
     <div className="flex gap-x-2 w-fit mx-auto">
       {vehicle.tripInfo?.trips ? <span>Trip {vehicle.tripInfo.trips.join(', ')}</span> : ''}
       {vehicle.block ? <span>Block {vehicle.block.name.split('-')[1]}</span> : ''}
-      {vehicle.driver ? <span>Driver {vehicle.driver}</span> : <i>Unknown driver</i>}
     </div>
     {vehicle.last_message ? <div className="text-center italic pr-1">LAST UPDATED {HSTify(vehicle.last_message, !vehiclePage)}</div> : ''}
   </>

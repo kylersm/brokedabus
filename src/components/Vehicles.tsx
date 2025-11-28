@@ -94,7 +94,6 @@ export default function Vehicles(props: {
               <th>Bus</th>
               <th className="hidden md:table-cell" colSpan={2}>Route</th><th className="table-cell md:hidden" colSpan={1}>Route</th>
               <th className="hidden lg:table-cell">Trip</th>
-              <th className="hidden lg:table-cell">Driver</th>
               <th className="hidden md:table-cell">Adherence</th><th className="table-cell md:hidden">Adhr.</th>
               <th className="hidden lg:table-cell">Last Updated</th><th className="table-cell lg:hidden">Updated</th>
             </tr>
@@ -138,10 +137,11 @@ function VehicleEntryFullInfo(props: { vehicle: TripVehicle }) {
       query: { vehicle: vehicle.number }
     }} className="font-bold text-lg inline whitespace-nowrap overflow-hidden link">BUS {vehicle.number}</Link>
 
-    <i className="text-md ml-5 whitespace-nowrap overflow-hidden">{busInfoToShortString(getVehicleInformation(vehicle.number))}<br/></i>
+    <i className="text-sm ml-5 whitespace-nowrap overflow-hidden">{busInfoToShortString(getVehicleInformation(vehicle.number))}<br/></i>
 
     <span className="font-semibold">{vehicle.tripInfo ? <><RouteChip inline route={{ code: vehicle.tripInfo.routeCode, id: vehicle.tripInfo.routeId }}/> {vehicle.tripInfo.headsign}</> : <i>No Route Assigned</i>}<br/></span>
-    {vehicle.tripInfo?.trips ? <>Trip #{vehicle.tripInfo.trips.join(', ')}</> : <i>No Trip</i>}, {vehicle.driver !== 0 ? <>Driver #{vehicle.driver}</> : <i>Unknown Driver</i>}<br/>
+    {/* if block info is present then the trip will be as well */}
+    {vehicle.blockName ? <>Block {vehicle.blockName.slice(-3)}, </> : null} {vehicle.tripInfo?.trips ? <>Trip {vehicle.tripInfo.trips.join(', ')}</> : <i>No Trip</i>}<br/>
     {schedule}<br/>
     Updated {HSTify(vehicle.last_message)}
   </div>
@@ -183,7 +183,6 @@ function VehicleListEntry(props: { vehicle: TripVehicle }) {
       <td className="hidden md:table-cell text-center" colSpan={2}>-</td>
       <td className="hidden lg:table-cell text-center">-</td>
     </>}
-    <td className="hidden lg:table-cell px-2 text-center">{vehicle.driver ? vehicle.driver : <i>-</i>}</td>
     <td className={"px-2 font-mono " + (!onSchedule ? vehicle.adherence > 0 ? "text-green-500" : "text-red-500" : '')}>
       <span className="hidden md:block">{schedule}</span>
       <span className="block md:hidden text-center">{minifySchedule}</span>

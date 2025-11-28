@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect } from "react";
 import { type TripVehicle } from "~/lib/types";
 import { ActiveType, SortType, type VehicleFiltering } from "./Vehicles";
 import { BusInfos, FuelType, HeadsignColor, Manufacturer, routeTrafficTypes, type VehicleBlurb, VehicleInfo, WindowColor, WindowType } from "~/lib/BusTypes";
@@ -7,9 +7,11 @@ import RouteChip from "./Route";
 import { api } from "~/utils/api";
 import RemoveUnderline from "./RemoveUnderline";
 import Spinner from "./Spinner";
+import Collapser from "./Collapser";
 
+// need to include these until GTFS feed drops these routes
+const ignoreRoutes = ['A', '20', '303'];
 const SelectClass = "block md:flex gap-x-6 space-y-2 sm:space-y-0 whitespace-nowrap text-left flex-wrap pb-3";
-export const ExpandArrowClass = "inline-flex font-normal text-neutral-500 dark:text-neutral-400";
 export const ContainerClass = "bg-gray-50 dark:bg-[#333] shadow-inner shadow-neutral-400 dark:shadow-black text-left p-3 px-4 rounded-md mt-3 mb-7 gap-y-2";
 
 /**
@@ -34,7 +36,6 @@ export default function VehicleFilterOptions(props: {
   const { showFilter, setSF, vehicles, 
     filters, setFilters: _setFilters } = props;
 
-  const [showRF, setRF] = useState<boolean>(true);
   const { data: allRoutes } = api.gtfs.getAllRouteSuperficial.useQuery(void 0, {
     select: (data) => data.filter(d => d.name !== 'SKYLINE')
   });
@@ -97,48 +98,45 @@ export default function VehicleFilterOptions(props: {
             <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Activity:</p>
             <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap justify-center">
               <label className="whitespace-nowrap">Has route? <input type="checkbox" className="ml-1" checked={filters.hasRoute} onChange={() => setFilters({ hasRoute: !filters.hasRoute })}/></label>
-              <label className="whitespace-nowrap">Has driver? <input type="checkbox" className="ml-1" checked={filters.hasDriver} onChange={() => setFilters({ hasDriver: !filters.hasDriver })}/></label>
+              {/*<label className="whitespace-nowrap">Has driver? <input type="checkbox" className="ml-1" checked={filters.hasDriver} onChange={() => setFilters({ hasDriver: !filters.hasDriver })}/></label>*/}
             </div>
           </div>
         </div>
 
-        <div className="font-bold text-2xl mt-5 md:mt-0 cursor-pointer" onClick={() => setRF(!showRF)}>
-          Route Filters <div title={'Click to ' + (showRF ? 'hide' : 'show') + ' route filters'} className={`${ExpandArrowClass} ${showRF ? '' : 'rotate-180'}`}>V</div>
-        </div>
-
-        {showRF ? <><div className="transition-all delay-150 duration-500 w-fit sm:gap-x-9 text-left md:text-center overflow-x-auto grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:flex flex-wrap justify-center mx-auto [&_span]:whitespace-nowrap">
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.urban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all<RemoveUnderline> <RouteChip route={{ code: '1' }} inline text={"Urban"}/></RemoveUnderline></span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.suburban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all<RemoveUnderline> <RouteChip route={{ code: '40' }} inline text={"Suburban"}/></RemoveUnderline></span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.local.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all<RemoveUnderline> <RouteChip route={{ code: '151' }} inline text={"Local"}/></RemoveUnderline></span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => r.code.length && !(routeTrafficTypes.urban.concat(...routeTrafficTypes.suburban, ...routeTrafficTypes.local)).includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
-          >Select all<RemoveUnderline> <RouteChip route={{ code: '80' }} inline text={"Express"}/></RemoveUnderline></span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: activeRoutes.map(r => r._id) })}
-          >Select active only</span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: undefined })}
-          >Select all</span>
-          <span className="action" onClick={() => 
-            setFilters({ routeIdFilters: [] })}
-          >Unselect All</span>
-        </div>
-
-        <div className={`${ContainerClass} ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
-          <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
-            <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
-              !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
-                setFilters({ routeIdFilters: !e.target.checked ? filters.routeIdFilters.filter(f => f !== r._id) :
-                  filters.routeIdFilters.concat(r._id)})
-            }/> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
-          </label>
-        )}</div></> : <p className="mb-4 italic">Route filters are currently hidden. Click on the title to re-expand.</p>}
+        <Collapser title="Route Filters" hideMsg="Route filters are currently hidden.">
+          <div className="transition-all delay-150 duration-500 w-fit sm:gap-x-9 text-left md:text-center overflow-x-auto grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:flex flex-wrap justify-center mx-auto [&_span]:whitespace-nowrap">
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.urban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
+            >Select all<RemoveUnderline> <RouteChip route={{ code: '1' }} inline text={"Urban"}/></RemoveUnderline></span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.suburban.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
+            >Select all<RemoveUnderline> <RouteChip route={{ code: '40' }} inline text={"Suburban"}/></RemoveUnderline></span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => routeTrafficTypes.local.includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
+            >Select all<RemoveUnderline> <RouteChip route={{ code: '151' }} inline text={"Local"}/></RemoveUnderline></span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: [...new Set(allRoutes?.filter(r => r.code.length && !(routeTrafficTypes.urban.concat(...routeTrafficTypes.suburban, ...routeTrafficTypes.local)).includes(r.code)).map(r => r._id).concat(filters.routeIdFilters??[]))]})}
+            >Select all<RemoveUnderline> <RouteChip route={{ code: '80' }} inline text={"Express"}/></RemoveUnderline></span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: activeRoutes.map(r => r._id) })}
+            >Select active only</span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: undefined })}
+            >Select all</span>
+            <span className="action" onClick={() => 
+              setFilters({ routeIdFilters: [] })}
+            >Unselect All</span>
+          </div>
+          <div className={`${ContainerClass} ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.filter(r => !ignoreRoutes.includes(r.code)).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
+            <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
+              <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
+                !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
+                  setFilters({ routeIdFilters: !e.target.checked ? filters.routeIdFilters.filter(f => f !== r._id) :
+                    filters.routeIdFilters.concat(r._id)})
+              }/> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
+            </label>
+          )}</div>
+        </Collapser>
 
         <div className="mx-auto w-fit space-y-3">
           <div className="font-bold text-2xl">

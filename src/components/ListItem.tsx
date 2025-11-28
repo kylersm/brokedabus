@@ -37,7 +37,7 @@ function Linkify(props: PropsWithChildren & { href?: Url }) {
  * @returns - A react element.
  */
 export default function ListItem(props: PropsWithChildren & (TextItemProp | NoIconProp)) {
-  let SideIcon: JSX.Element = <></>;
+  let SideIcon: JSX.Element | undefined;
   if(props.emoji) {
     SideIcon = <div className={`${typeof props.emoji === "string" ? "text-4xl" : ""} ml-auto min-w-fit`}>
       {props.emoji}
@@ -45,11 +45,11 @@ export default function ListItem(props: PropsWithChildren & (TextItemProp | NoIc
   }
 
   const finalElement = <tr>
-    <td className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
+    {SideIcon && <td className={`w-fit pr-2 ${props.topEmoji ? "align-top" : ""}`}>
       <Linkify href={props.href}>
         {SideIcon}
       </Linkify>
-    </td>
+    </td>}
 
     <td className="h-fit min-h-12 pr-2 align-middle">
       <Linkify href={props.href}>

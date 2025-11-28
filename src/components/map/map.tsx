@@ -386,7 +386,7 @@ function GenerateBusSVG(vehicle: string, dark?: boolean, direction?: number, rou
 
     <text x={25} y={25/2+5.5} textAnchor='middle' fontFamily="Verdana" fill={dark ? '#fff' : '#000'}>{vehicle}</text>
     <text x={25} y={25/2+25+5.5} textAnchor='middle' fill={text} fontFamily="Verdana">
-      {direction === 0 && '«'}{route}{direction === 1 && '»'}
+      {direction === 0 && '«'}{route?.toLowerCase().endsWith(" line") ? route.slice(0, - ' LINE'.length) + 'x' : route}{direction === 1 && '»'}
     </text>
   </svg>))
 }
@@ -396,7 +396,6 @@ function GenerateStopSVG(stop: string, noGPS?: boolean, stale?: boolean): string
   return "data:image/svg+xml," + encodeURIComponent(renderToStaticMarkup(<svg height={120} width={60+2} xmlns="http://www.w3.org/2000/svg">
     <polyline points="21,1 41,1 61,21 61,41 41,61 21,61 1,41 1,21 21,1 41,1" stroke="#000000" fill={!noGPS ? !stale ? "#ff0000" : "#dddddd" : "#cccccc"} fillOpacity={stale ? 0.75 : 1} strokeWidth={2}/>
     <rect x={(60 + 2 - 6)/2} y={(120+2)/2} width={6} height={120/2} stroke="#000000" fill="#dddddd" strokeWidth={2}/>
-
     <text x={(60 + 2)/2} y={1 + 20*2 - 20/2 + font/2.825} fontSize={font} textAnchor='middle' color="#000000" fontFamily="Verdana">{stop}</text>
   </svg>));
 }
