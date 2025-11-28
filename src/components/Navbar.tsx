@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 export default function Navbar() {
   const router = useRouter();
   return (
-    <nav className="fixed top-0 w-screen bg-slate-500 text-white py-3 px-5 flex shadow-nav z-50">
+    <nav className="fixed top-0 w-screen bg-[#D4862A] text-white py-3 px-5 flex shadow-nav z-50">
       <div onClick={() => router.back()} 
         className='cursor-pointer flex'
         title="Click to navigate to the previous page."
