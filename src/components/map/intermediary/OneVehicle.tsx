@@ -68,7 +68,7 @@ export function OneVehicle(props: { vehicle: string; }) {
         <LastUpdated />
       </>}
       routePath={shapes ? [{
-        direction: shapes.direction === 1 ? 'West' : 'East',
+        direction: shapes.direction === 1 ? 'East' : 'West',
         routePath: shapes
       }] : []}
       stops={stops ? stops.map((s) => ({
