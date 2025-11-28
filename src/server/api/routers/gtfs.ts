@@ -165,7 +165,9 @@ const getShIDByTripID = (feed: GTFSFeed, tripID: string): string | undefined => 
 }
 
 const getRouteInfoByCode = (feed: GTFSFeed, routeCode: string): GTFS.PolishedRoute | undefined => {
-  const route = feed.routes.find(r => r.route_short_name === routeCode);
+  if(['A', 'U', 'W'].includes(routeCode.toUpperCase()))
+    routeCode = routeCode + " LINE";
+  const route = feed.routes.find(r => r.route_short_name.toLowerCase() === routeCode.toLowerCase());
   return route ? GTFS.makePolishedRoute(route) : undefined;
 }
 

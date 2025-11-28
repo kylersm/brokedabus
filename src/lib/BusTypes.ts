@@ -17,7 +17,7 @@ export const routeTrafficTypes = {
   // #B97C2A
   urban: [
     'A',      // expires Oct 16th
-    'A LINE', // Skyline segment 2 rt.    I think the colors chosen for these lines are quite harsh except for U line.
+    'A LINE', // Skyline segment 2 rt.    I think the colors chosen for these lines are quite harsh for chips except for U line.
     'U LINE', // Skyline segment 2 rt.
     'W LINE', // Skyline segment 2 rt.
     '1',
@@ -72,7 +72,9 @@ export const colors = {
   
   rail:     "#142E57",
 
-  UHM:      "#328F16"
+  UHM:      "#328F16",
+  ALINE:    "#00BB00",
+  WLINE:    "#00BBBB"
 };
 
 export const brightenColor = (color: string, level=0x333333): string => {
@@ -90,6 +92,10 @@ export const getColorFromRoute = (route: SuperficialRoute): string => {
     return colors.rail;
   else if(route.code === "U LINE")
     return colors.UHM;
+  else if(route.code === "A LINE")
+    return colors.ALINE;
+  else if(route.code === "W LINE")
+    return colors.WLINE;
   else if(routeTrafficTypes.urban.includes(route.code))
     return colors.urban;
   else if(routeTrafficTypes.suburban.includes(route.code))
@@ -244,7 +250,7 @@ export const VehicleInfo = {
   NF_DE40LFR: {   // Diesel & Electric (or hybrid) 40ft
     manufacturer: Manufacturer.NewFlyer,
 
-    desc: "Diesel Electric Low Floor",
+    desc: "Diesel-Electric Low Floor",
     shortDesc: "DE40LFR",
     length: 40,
     fuelType: FuelType.Hybrid,
@@ -264,7 +270,7 @@ export const VehicleInfo = {
   NF_DE60LFR: {   // Hybrid artic
     manufacturer: Manufacturer.NewFlyer,
 
-    desc: "Diesel Electric Low Floor",
+    desc: "Diesel-Electric Low Floor",
     shortDesc: "DE60LFR",
     length: 60,
     fuelType: FuelType.Hybrid,
@@ -276,7 +282,7 @@ export const VehicleInfo = {
   NF_XDE60: {     // Hybrid artic, only 4 of these exist
     manufacturer: Manufacturer.NewFlyer,
 
-    desc: "Xcelsior Diesel Electric",
+    desc: "Xcelsior Diesel-Electric",
     shortDesc: "XDE60",
     length: 60,
     fuelType: FuelType.Hybrid,
@@ -315,7 +321,7 @@ export const VehicleInfo = {
 
     articulated: false
   },
-  NV_LFSA: {      // 6032-6048, NEW 62ft artics with colored front, right, left, and back headsigns
+  NV_LFSA: {      // 6032-6048, 62ft artics with colored front, right, left, and back headsigns
     manufacturer: Manufacturer.Nova,
 
     desc: "Low Floor Series",
@@ -360,7 +366,6 @@ export const filterVehicles = (vehicles: TripVehicle[] | undefined, filters: Veh
     const vehicleInfo = getVehicleInformation(v.number);
     return (filters.includeUnknown || vehicleInfo) &&
     (!filters.hasRoute || v.tripInfo?.routeCode !== undefined) &&
-    (!filters.hasDriver || v.driver !== 0) &&
     (!filters.leftHeadsign || vehicleInfo?.leftHeadsign) &&
 
     (!filters.windowType || filters.windowType.some(w => w === vehicleInfo?.windowType)) &&
@@ -458,17 +463,7 @@ export const BusInfos = {
     leftHeadsign: false,
     headsignColor: HeadsignColor.White
   },
-  NFI_161: {
-    model: VehicleInfo.NF_DE60LFR,
-    year: "2010",
-
-    windowColor: WindowColor.Black,
-    windowType: WindowType.Individual,
-
-    leftHeadsign: false,
-    headsignColor: HeadsignColor.White
-  },
-  NFI_162_180: {
+  NFI_161_180: {
     model: VehicleInfo.NF_DE60LFR,
     year: "2010",
 
@@ -558,7 +553,7 @@ export const BusInfos = {
     leftHeadsign: false,
     headsignColor: HeadsignColor.White
   },
-  G_630_663: {
+  G_630_658: {
     model: VehicleInfo.G_LF_40,
     year: "2015",
 
@@ -566,6 +561,16 @@ export const BusInfos = {
     windowType: WindowType.Individual,
     
     leftHeadsign: false,
+    headsignColor: HeadsignColor.White
+  },
+  G_659_663: {
+    model: VehicleInfo.G_LF_40,
+    year: "2015",
+
+    windowColor: WindowColor.Black,
+    windowType: WindowType.Individual,
+    
+    leftHeadsign: true,
     headsignColor: HeadsignColor.White
   },
   G_664_669: {
@@ -778,10 +783,8 @@ export const getVehicleInformation = (vehicle: string): BusInfo | undefined => {
     return BusInfos.NFI_151_159;
   else if (vin === 160)
     return BusInfos.NFI_160;
-  else if (vin === 161)
-    return BusInfos.NFI_161;
-  else if (162 <= vin && vin <= 180)
-    return BusInfos.NFI_162_180;
+  else if (161 <= vin && vin <= 180)
+    return BusInfos.NFI_161_180;
   else if (181 <= vin && vin <= 184)
     return BusInfos.NFI_181_184;
   else if (185 <= vin && vin <= 194)
@@ -798,8 +801,10 @@ export const getVehicleInformation = (vehicle: string): BusInfo | undefined => {
     return BusInfos.G_521_555;
   else if (601 <= vin && vin <= 629)
     return BusInfos.G_601_629;
-  else if (630 <= vin && vin <= 663)
-    return BusInfos.G_630_663;
+  else if (630 <= vin && vin <= 658)
+    return BusInfos.G_630_658;
+  else if (659 <= vin && vin <= 663)
+    return BusInfos.G_659_663;
   // 666 isn't a bus coz of satanism
   else if ((vin === 664 || vin === 665) || 667 <= vin && vin <= 669)
     return BusInfos.G_664_669;
@@ -849,6 +854,7 @@ export type BusNums = keyof typeof BusInfos;
 // which routes have 29, 35, and 40 footers
 export const L29_Routes = [
   '10',  '123',
+  '414',
   '503', '541', '545', '551', '552',
   '671'
 ];
@@ -861,11 +867,13 @@ export const L35_Routes = [
 ];
 
 export const L40_Routes = [
-  'A',   'C',
+  'A LINE', 'U LINE', 'W LINE',   
+  'C',
+
   '1',   '1L',
   '2',   '2L',
   '3',   '4',   '5',   '6',   '7',   '8',
-  '13',  '20',  '23',  '32',
+  '13',  '23',  '32',
   '40',  '41',  '43',  '44',  '46',  '47',
   '51',  '52',  '53',  '54',  
   '60',  '61',  '65',  '66',  '67',  '69',
@@ -886,8 +894,9 @@ export const L40_Routes = [
 export const ArticRoutes = [
   '1',  '1L',
   '2',  '2L',
-  '20', '42',
-  'A',  'E',
+  '42', 'E',
+
+  'A LINE', 'W LINE',
 
   'W1', 'W2', 'W3',
   '81',
@@ -900,7 +909,7 @@ export const ElectricRoutes = [
 
   '3',  '4',  '6',  '7',  '8',
   '13', 
-  '20', '23',
+  '23',
   
   '60', '61', '66', '67', '69',
 
@@ -912,7 +921,6 @@ export const HybridRoutes = [
   '1', '1L',
   '2', '2L',
   
-  '20',
   '40', '42', '43', '46', '47',
   '51', '52', '53', '54',
 
@@ -920,7 +928,9 @@ export const HybridRoutes = [
 
   '411', '433', '444',
 
-  'A',  'C',  'E',
+  'C',  'E',
+
+  'A LINE', 'U LINE', 'W LINE',
 
   '91', '93'
 ];
@@ -935,7 +945,7 @@ export const KalihiBusses: BusInfo[] = ([
   'G_3501', 'G_4001_4003', 'G_4004_4016',
   'G_4017_4030',
 
-  'NFI_142_150', 'NFI_161', 'NFI_162_180',
+  'NFI_142_150', 'NFI_161_180',
   'NFI_870_879', 'NFI_880_888', 'NFI_889_896',
   'NFI_4031_4057',
   
@@ -949,7 +959,7 @@ export const KalihiRoutes = [
   '2', '2L',
   '3', '4', '5', '6', '7', '8',
 
-  'A', 'U', 'W',
+  'A LINE', 'U LINE', 'W LINE',
 
   '10', '13', '14', 
   '20', '23', '32',
@@ -971,7 +981,8 @@ export const KalihiRoutes = [
 
 export const PearlCityBusses: BusInfo[] = ([
   'G_20_23', 'G_60_67',
-  'G_601_629', 'G_630_663', 'G_664_669',
+  'G_601_629', 'G_630_658',
+  'G_659_663', 'G_664_669',
   'G_670_673', 'G_674_677',
   'G_950_957', 'G_958_965',
 
@@ -983,7 +994,7 @@ export const PearlCityBusses: BusInfo[] = ([
 ] as BusNums[]).map(k => BusInfos[k]);
 
 export const PearlCityRoutes = [
-  'A', 'C', 'E',
+  'C', 'E',
   
   '40', '41', '42', '43', '44', '46', '47',
   '51', '52', '53', '54', 

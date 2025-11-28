@@ -46,12 +46,12 @@ export const sortString = (a: string, b: string) => {
 const isCE = (str: string) => str.length === 1 && isNaN(parseInt(str));
 const isLine = (str: string) => str.endsWith(" LINE");
 export const sortRouteCodes = (a: string, b: string) => {
-  if((isCE(a) && isCE(b)) || (isLine(a) && isLine(b))) return numericSorter.compare(a, b);
-  else if(isCE(a)) return -1;
-  else if(isCE(b)) return 1;
-  // yes this is repetitive no it doesn't achieve the desired order if i merge w/ above
-  else if(isLine(a)) return -1;
-  else if(isLine(b)) return 1;
+  // decided to sort the express/lines alphabetically, since A/20 are getting dropped...
+  const A = isCE(a) || isLine(a);
+  const B = isCE(b) || isLine(b);
+  if(A && B) return numericSorter.compare(a, b);
+  else if(A) return -1;
+  else if(B) return 1;
 
   return sortString(a, b);
 };
@@ -166,14 +166,16 @@ export const compareTimes = (a: number, b: string): number => {
   return timeB - a;
 }
 
-export const arrivalString = (time: Date, includeTime?: boolean): string => {
+export const arrivalString = (time: Date, arrives: boolean, includeTime?: boolean): string => {
   const now = Date.now();
-  const arrives = time.getTime();
-  const withoutSeconds = Math.round((arrives - now) / (60 * 1000)) * 60;
-  if (withoutSeconds <= 0)
-    return "right now";
+  const ts = time.getTime();
+  const withoutSeconds = Math.round((ts - now) / (60 * 1000)) * 60;
+  if (withoutSeconds < 0)
+    return `${arrives ? 'Arrived' : 'Departed'} ${quantifyTime(-withoutSeconds)} ago`;
+  else if (withoutSeconds == 0)
+    return `${arrives ? 'Arrives' : 'Departs'} now`;
   else
-    return `in ${quantifyTime(withoutSeconds)}${includeTime ? ` at ${HSTify(time, true)}` : ''}`;
+    return `${arrives ? 'Arrives' : 'Departs'} in ${quantifyTime(withoutSeconds)}${includeTime ? ` at ${HSTify(time, true)}` : ''}`;
 }
 
 export const quantifyTime = (time: number): string => {
