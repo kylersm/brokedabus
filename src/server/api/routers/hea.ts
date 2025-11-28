@@ -94,7 +94,8 @@ export const HEARouter = createTRPCRouter({
 
       return {
         ...vehicle,
-        tripInfo: GTFSBinds.getExpectedTrip(block)
+        tripInfo: GTFSBinds.getExpectedTrip(block),
+        blockName: block?.name,
       };
     }
   ),
@@ -108,7 +109,8 @@ export const HEARouter = createTRPCRouter({
       return Object.values(vehicles).filter(v => filterVehicles(v, input.route, input.lastActive))
       .map(({ block, ...v }): Types.TripVehicle => ({
         ...v,
-        tripInfo: GTFSBinds.getExpectedTrip(block)
+        tripInfo: GTFSBinds.getExpectedTrip(block),
+        blockName: block?.name,
       }));
     }
   ),

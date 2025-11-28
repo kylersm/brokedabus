@@ -42,7 +42,8 @@ const XML = new XMLParser({
 const toPolishedVehicle = (v: Vehicle): Types.HEAVehicle => ({
   number: v.number,
   trip: v.trip === "null_trip" ? undefined : v.trip,
-  driver: parseInt(v.driver),
+  // OTS made driver IDs anonymous, can't even tell if a driver logged into their bus (driver ID changes from 0 to ####)
+  // driver: parseInt(v.driver),
   lat: parseFloat(v.latitude),
   lon: parseFloat(v.longitude),
   adherence: parseInt(v.adherence),
