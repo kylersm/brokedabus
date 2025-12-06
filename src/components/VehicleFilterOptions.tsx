@@ -127,7 +127,7 @@ export default function VehicleFilterOptions(props: {
               setFilters({ routeIdFilters: [] })}
             >Unselect All</span>
           </div>
-          <div className={`${ContainerClass} ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.filter(r => !ignoreRoutes.includes(r.code)).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
+          <div className={`${ContainerClass} w-fit ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.filter(r => !ignoreRoutes.includes(r.code)).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
             <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
               <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
                 !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
