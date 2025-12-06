@@ -32,10 +32,10 @@ enum View {
 
 export interface VehicleFiltering {
   lastMessage: ActiveType;
-  sortType: SortType;
+  sortType?: SortType;
   ascendSort: boolean;
 
-  hasRoute: boolean;
+  requireRoute: boolean;
   hasDriver: boolean;
   includeUnknown: boolean;
 
@@ -48,13 +48,13 @@ export interface VehicleFiltering {
   routeIdFilters?: string[];
 }
 
-export const defaultVehicleFilters = {
+export const defaultVehicleFilters: VehicleFiltering = {
   lastMessage: ActiveType.DAY,
   sortType: SortType.NUMBER,
   ascendSort: false,
 
-  hasRoute: true,
-  hasDriver: true,
+  requireRoute: true,
+  hasDriver: false,
   includeUnknown: false
 };
 
@@ -64,7 +64,7 @@ export const defaultVehicleFilters = {
  * TEMPLATE:
  *   BUS [Vehicle] [Make model]
  *   [Route Chip] - [Headsign]
- *   Trip [#], Driver [#]
+ *   Block [#], Trip [#]
  *   Updated [Time]
  * @param props - A list of vehicles, and filtering to use
  * @returns - A react element.

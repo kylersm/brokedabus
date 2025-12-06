@@ -97,7 +97,7 @@ export default function VehicleFilterOptions(props: {
           <div className="w-full md:flex block items-center">
             <p className="font-bold mx-auto md:mx-0 text-lg w-fit md:mr-7">Activity:</p>
             <div className="!ml-0 md:ml-0 gap-x-6 flex flex-wrap justify-center">
-              <label className="whitespace-nowrap">Has route? <input type="checkbox" className="ml-1" checked={filters.hasRoute} onChange={() => setFilters({ hasRoute: !filters.hasRoute })}/></label>
+              <label className="whitespace-nowrap">Require route? <input type="checkbox" className="ml-1" checked={filters.requireRoute} onChange={() => setFilters({ requireRoute: !filters.requireRoute })}/></label>
               {/*<label className="whitespace-nowrap">Has driver? <input type="checkbox" className="ml-1" checked={filters.hasDriver} onChange={() => setFilters({ hasDriver: !filters.hasDriver })}/></label>*/}
             </div>
           </div>

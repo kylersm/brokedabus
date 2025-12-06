@@ -362,10 +362,11 @@ export const matchesBusInfo = (
 
 export const filterVehicles = (vehicles: TripVehicle[] | undefined, filters: VehicleFiltering) => {
   const now = Date.now() - HST_UTC_OFFSET * 1000;
-  return vehicles?.filter(v => {
+
+  const filtered = vehicles?.filter(v => {
     const vehicleInfo = getVehicleInformation(v.number);
     return (filters.includeUnknown || vehicleInfo) &&
-    (!filters.hasRoute || v.tripInfo?.routeCode !== undefined) &&
+    ((!filters.requireRoute && v.tripInfo === undefined) || (v.tripInfo && (!filters.routeIdFilters || filters.routeIdFilters.includes(v.tripInfo.routeId)))) &&
     (!filters.leftHeadsign || vehicleInfo?.leftHeadsign) &&
 
     (!filters.windowType || filters.windowType.some(w => w === vehicleInfo?.windowType)) &&
@@ -373,23 +374,25 @@ export const filterVehicles = (vehicles: TripVehicle[] | undefined, filters: Veh
     (!filters.headsignColor || filters.headsignColor.some(hc => hc === vehicleInfo?.headsignColor)) &&
 
     (!filters.makeModel || filters.makeModel.some(m => VehicleInfo[m] === vehicleInfo?.model)) &&
-    (!filters.routeIdFilters || v.tripInfo && filters.routeIdFilters.includes(v.tripInfo.routeId)) &&
     (!filters.lastMessage || filters.lastMessage === ActiveType.ALL ||
       (filters.lastMessage === ActiveType.MONTH   ? (now - v.last_message.getTime()) <= 30 * 24 * 60 * 60 * 1000 :
        filters.lastMessage === ActiveType.WEEK    ? (now - v.last_message.getTime()) <= 7 * 24 * 60 * 60 * 1000 :
     /* filters.lastMessage === ActiveType.DAY */    (now - v.last_message.getTime()) <= 24 * 60 * 60 * 1000))
-  }).sort((a, b) => {
-    if(!filters.ascendSort) {
-      const swap = b;
-      b = a;
-      a = swap;
-    }
-    return filters.sortType === SortType.NUMBER ? sortString(a.number, b.number) :
-      filters.sortType === SortType.DATE ? sortString(a.number, b.number) + a.last_message.getTime() - b.last_message.getTime() :
-      filters.sortType === SortType.ROUTE ? sortRouteCodes(b.tripInfo?.routeCode ?? '', a.tripInfo?.routeCode ?? '') :
-      filters.sortType === SortType.ADHERENCE ? b.adherence - a.adherence :
-      0;
   });
+  if(filters.sortType)
+    return filtered?.sort((a, b) => {
+      if(!filters.ascendSort) {
+        const swap = b;
+        b = a;
+        a = swap;
+      }
+      return filters.sortType === SortType.NUMBER ? sortString(a.number, b.number) :
+        filters.sortType === SortType.DATE ? sortString(a.number, b.number) + a.last_message.getTime() - b.last_message.getTime() :
+        filters.sortType === SortType.ROUTE ? sortRouteCodes(b.tripInfo?.routeCode ?? '', a.tripInfo?.routeCode ?? '') :
+        filters.sortType === SortType.ADHERENCE ? b.adherence - a.adherence :
+        0;
+    });
+  else return filtered;
 }
 
 export const BusInfos = {
@@ -753,7 +756,7 @@ export const BusInfos = {
     leftHeadsign: true,
     headsignColor: HeadsignColor.White
   },
-  NOVA_6032_6048: {
+  NOVA_6032_6047: {
     model: VehicleInfo.NV_LFSA,
     year: "2024",
 
@@ -769,13 +772,14 @@ export const getVehicleInformation = (vehicle: string): BusInfo | undefined => {
   const vin = parseInt(vehicle);
 
   // adapting from https://cptdb.ca/wiki/index.php/TheBus
-  if (20 <= vin && vin <= 23)
+  // some vehicle numbers require there to be padded to length 3.
+  if (20 <= vin && vin <= 23 && vehicle.length === 3)
     return BusInfos.G_20_23;
   else if (30 <= vin && vin <= 37)
     return BusInfos.G_30_37;
-  else if (50 <= vin && vin <= 59)
+  else if (50 <= vin && vin <= 59 && vehicle.length === 3)
     return BusInfos.G_50_59;
-  else if (60 <= vin && vin <= 67)
+  else if (60 <= vin && vin <= 67 && vehicle.length === 3)
     return BusInfos.G_60_67;
   else if (142 <= vin && vin <= 150)
     return BusInfos.NFI_142_150;
@@ -843,8 +847,8 @@ export const getVehicleInformation = (vehicle: string): BusInfo | undefined => {
     return BusInfos.NFI_4031_4057;
   else if (6001 <= vin && vin <= 6031)
     return BusInfos.NFI_6001_6031;
-  else if (6032 <= vin && vin <= 6048)
-    return BusInfos.NOVA_6032_6048;
+  else if (6032 <= vin && vin <= 6047)
+    return BusInfos.NOVA_6032_6047;
   
   return undefined;
 }
@@ -949,7 +953,7 @@ export const KalihiBusses: BusInfo[] = ([
   'NFI_870_879', 'NFI_880_888', 'NFI_889_896',
   'NFI_4031_4057',
   
-  'NOVA_6032_6048'
+  'NOVA_6032_6047'
 ] as BusNums[]).map(k => BusInfos[k]);
 
 // kalihi/PC routes determined using https://apps.thebus.org/transitinfo/

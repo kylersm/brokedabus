@@ -67,7 +67,7 @@ const RoutePage: NextPage<{route: string;}> = ({ route }) => {
       <hr className='mt-2'/>
     </div>
 
-    <div className="inline-block md:flex mx-auto md:w-fit mt-3">
+    <div className="inline-block md:flex mx-auto w-full mt-3">
       <Collapser title="Westbound" addHr hideMsg="Westbound routes are hidden.">
         <HalfTable>
           {GetListOfShapes(westbound)}

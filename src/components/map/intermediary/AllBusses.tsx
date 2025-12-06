@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import { useMap, StopArrival } from "../mapIntermediate";
 import StopPopup from "../popups/StopPopup";
-import { ActiveType, SortType, type VehicleFiltering } from "../../Vehicles";
+import { ActiveType, type VehicleFiltering } from "../../Vehicles";
 import { filterVehicles } from "~/lib/BusTypes";
 import { areArraysSimilar, getHSTTime } from "~/lib/util";
 import VehicleFilterOptions from "../../VehicleFilterOptions";
@@ -40,11 +40,9 @@ export function AllBusses() {
 
   const [filters, setFilters] = useState<VehicleFiltering>({
     lastMessage: ActiveType.DAY,
-    // sorting doesn't really make sense here
-    sortType: SortType.DATE,
     ascendSort: false,
   
-    hasRoute: true,
+    requireRoute: true,
     hasDriver: false,
     includeUnknown: false
   });
