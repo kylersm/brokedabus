@@ -8,7 +8,7 @@ export default function Collapser(props: {
   addHr?: boolean;
 } & PropsWithChildren) {
   const [hide, setHide] = useState(false);
-  return <div className="w-full mx-3">
+  return <div className="w-full">
     <div className="font-bold text-2xl w-fit mx-auto cursor-pointer transition-transform duration-100 ease-in" 
       onClick={() => setHide(h => !h)}>
       {props.title} <div 
