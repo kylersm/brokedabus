@@ -3,7 +3,7 @@ import type { GetStaticProps, NextPage } from "next";
 import { appRouter } from "~/server/api/root";
 import superjson from "superjson";
 import { TRPCError } from "@trpc/server";
-import { getHNLSafeDateString, sortRouteCodes, toNiceDateString } from "~/lib/util";
+import { compareToNow, getHNLSafeDateString, sortRouteCodes, toNiceDateString } from "~/lib/util";
 import Spinner from "~/components/Spinner";
 import StopTitle from "~/components/StopTitle";
 import ListItem from "~/components/ListItem";
@@ -67,6 +67,22 @@ const Calendar: NextPage<{stop:string}> = ({ stop }) => {
     {!isLoading ? calendar ? <GenericTable>
       {Object.entries(calendar).filter(([d]) => beforeToday || (parseInt(d) >= today.getTime())).map(([k, ci]) => {
         const date = new Date(parseInt(k));
+        let relation: string;
+        switch(compareToNow(getHNLSafeDateString(date))) {
+          // if we're one ahead of the other date
+          case 1:
+            relation = " (Yesterday)";
+            break;
+          case 0:
+            relation = " (Today)";
+            break;
+          case -1:
+            relation = " (Tomorrow)";
+            break;
+          default:
+            relation = "";
+            break;
+        }
         return <ListItem key={"D"+k}
           topEmoji
           emoji={<Image src={`/dotw/${dotw[date.getUTCDay()]}.png`} className="min-w-10 max-w-14" alt={dotw[date.getUTCDay()] ?? ''} width={150} height={150}/>}
@@ -76,7 +92,7 @@ const Calendar: NextPage<{stop:string}> = ({ stop }) => {
           }}
         >
           <div className="w-fit text-left max-w-[25rem]">
-            <p className="text-lg font-semibold">{toNiceDateString(date)}{parseInt(k) < today.getTime() && " (Passed)"}</p>
+            <p className="text-lg font-semibold">{toNiceDateString(date)}{relation}{parseInt(k) < today.getTime() && " (Passed)"}</p>
             <div>{ci.length ? 
               ci.sort((a, b) => sortRouteCodes(a.code, b.code)).map(c => <span key={c.id+c.code} className="pr-2 whitespace-nowrap inline-block"><RouteChip inline route={c}/></span>)
             : <i>No trips planned</i>}</div>

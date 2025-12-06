@@ -138,7 +138,7 @@ const DateRoutes: NextPage<{stop: string; date: string;}> = ({ stop, date }) => 
       </Collapser> : <></>}
 
 
-      {PM.length ? <Collapser title="Afternoon (PM)" addHr hideMsg="Morning times are hidden.">
+      {PM.length ? <Collapser title="Afternoon (PM)" addHr hideMsg="Afternoon times are hidden.">
         <HalfTable>
           {PM.map(r => 
             <ListItem
