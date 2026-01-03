@@ -9,10 +9,21 @@ const CExpress = ['A', 'C', 'E']; // remove 'A' on 16th
  * 
  * Route ID is only needed if we want to show skyline chip
  * 
+ * Color is for route searching.
+ * 
  * @param props - Takes a route code and a route ID, and assigns it a color to dye the chip. Inactive makes text italic, inline adjusts CSS to fit inline.  
  * @returns - A react element.
  */
-export default function RouteChip(props: { route: SuperficialRoute; inline?: boolean; inactive?: boolean; text?: string; }) {
+export default function RouteChip(props: {
+  route: SuperficialRoute;
+  inline?: boolean;
+  inactive?: boolean;
+  text?: string;
+  color?: {
+    bg: string;
+    text: string;
+  }
+}) {
   // show 'SKY' instead of blank text
   const isSkyline = props.route.id === "181" || props.route.code.toLowerCase() === "skyline";
   // check if it is a city/country express route
@@ -33,8 +44,8 @@ export default function RouteChip(props: { route: SuperficialRoute; inline?: boo
     code = <>{code.slice(0, -1)}<span className="text-sm b">L</span></>;
 
   return <div 
-    className={`routechip ${props.inline ? "w-fit inline py-0.5" : "w-full max-w-16"} ${props.inactive ? "italic" : "font-semibold"}`} 
-    style={{ backgroundColor: getColorFromRoute(props.route) }}
+    className={`routechip ${props.color?.text ?? "text-white"} ${props.color?.bg ?? ""} ${props.inline ? "w-fit inline py-0.5" : "w-full max-w-16"} ${props.inactive ? "italic" : "font-semibold"}`} 
+    style={{ backgroundColor: props.color?.bg ? undefined : getColorFromRoute(props.route) }}
   >
     {isCExpress || isLine ? <div className="text-[75%] italic inline">三</div> : null}
     {<div className={`${isCExpress ? "italic" : ''} ${isLine ? "underline" : ''} inline`}>

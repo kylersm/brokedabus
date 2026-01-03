@@ -28,7 +28,7 @@ label input[type=radio] {
 }
 
 .routechip {
-  @apply h-fit break-keep text-white text-center px-3 min-w-12 rounded-sm
+  @apply h-fit break-keep text-center px-3 min-w-12 rounded-sm
 }
 
 tbody.altcolors tr:nth-child(odd) {

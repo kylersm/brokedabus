@@ -48,8 +48,12 @@ export default function Headsign() {
           topEmoji
           emoji={<span className="md:block hidden"><RouteChip route={{ code: route.routeCode, id: route.routeID }}/></span>}
         >
-          <span className="md:hidden inline"><RouteChip route={{ code: route.routeCode, id: route.routeID }} inline/></span> <b>{headsign.length ? route.route.headsign.map(s => 
-              s.toLowerCase() === headsign.toLowerCase() ? <><span className="bg-yellow-300 text-red-600">{s}</span></> : s
+          <span className="md:hidden inline">
+            <RouteChip route={{ code: route.routeCode, id: route.routeID }} inline/>
+          </span> <b>{headsign.length ? route.route.headsign.map(s => 
+              s.toLowerCase() === headsign.toLowerCase() 
+                ? <><span className="bg-yellow-300 text-red-600">{s}</span></>
+                : s
             ) : route.route.headsign}</b><br/>
             Starts from Stop {route.route.firstStopCode} - <br className="md:hidden inline"/> <span className="md:not-italic italic">{route.route.firstStopName}</span><br/>
             Shape ID: <pre className="inline">{route.route.shapeID}</pre>
