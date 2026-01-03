@@ -157,7 +157,8 @@ async function getVehiclePromise() {
     const newVehicles = (XML.parse(xml) as VehiclesContainer).vehicles.vehicle.map(toPolishedVehicle).filter((v, i, a) => 
       // discard if there is a vehicle with the same number without a route assigned to it
       // select one with higher index
-      !a.some((d, j) => j !== i && d.number === v.number && (j > i ? d.trip !== undefined : v.trip === undefined))
+      !a.some((d, j) => j !== i && d.number === v.number && d.last_message.getTime() > v.last_message.getTime()) &&
+      !v.number.startsWith("03") // remove 03X busses
     ).sort((a, b) => 
       // sort by latest message
       b.last_message.getTime() - a.last_message.getTime()
