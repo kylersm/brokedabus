@@ -92,8 +92,10 @@ export default function Vehicles(props: {
           <thead>
             <tr className="text-center">
               <th>Bus</th>
+              {/* route chip + headsign if screen size permits */}
               <th className="hidden md:table-cell" colSpan={2}>Route</th><th className="table-cell md:hidden" colSpan={1}>Route</th>
               <th className="hidden lg:table-cell">Trip</th>
+              <th className="hidden md:table-cell">Block</th>
               <th className="hidden md:table-cell">Adherence</th><th className="table-cell md:hidden">Adhr.</th>
               <th className="hidden lg:table-cell">Last Updated</th><th className="table-cell lg:hidden">Updated</th>
             </tr>
@@ -157,6 +159,7 @@ function VehicleListEntry(props: { vehicle: TripVehicle }) {
   (vehicle.adherence > 0 ? "ahead of" : "behind")) + " schedule";
   const minifySchedule = onSchedule ? "On time": `${vehicle.adherence < 0 ? '-' : '+'}${quantifyTimeAsTS(Math.abs(vehicle.adherence * 60))}`;
   return <tr>
+    {/* bus # */}
     <td className="text-xl font-semibold text-center font-mono py-3 sm:py-0.5 px-3">
       <Link className="link" href={{
         pathname: "/vehicle/[vehicle]",
@@ -164,30 +167,44 @@ function VehicleListEntry(props: { vehicle: TripVehicle }) {
       }}>{vehicle.number}</Link>
     </td>
     {tripInfo ? <>
-      <td><div className="flex justify-center gap-x-2">
-        <RouteChip route={{ code: tripInfo.routeCode, id: tripInfo.routeId}}/>
-        <span className="block sm:hidden">{tripInfo.direction ? '->' : '<-'}</span>
-        <span className="hidden sm:block md:hidden font-mono">{tripInfo.direction ? 'Eastbound' : 'Westbound'}</span>
-      </div></td>
+      {/* route, direction (or use arrows if screen size doesn't permit it) */}
+      <td>
+        <div className="flex justify-center gap-x-2">
+          <RouteChip route={{ code: tripInfo.routeCode, id: tripInfo.routeId}}/>
+          <span className="block sm:hidden">{tripInfo.direction ? '->' : '<-'}</span>
+          <span className="hidden sm:block md:hidden font-mono">{tripInfo.direction ? 'Eastbound' : 'Westbound'}</span>
+        </div>
+      </td>
+      {/* headsign if screen permits */}
       <td className="hidden md:table-cell w-fit pl-1">
         {/* Force route name to not force the table off-page & make a scrollbar: https://stackoverflow.com/a/19623352 */}
         <table className="table-fixed w-full border-0 border-collapse border-spacing-0">
-          <tr className="!bg-transparent"><td className="whitespace-nowrap overflow-hidden text-ellipsis">
+          <tr className="!bg-transparent">
+            <td className="whitespace-nowrap overflow-hidden text-ellipsis" title={tripInfo.headsign}>
             {tripInfo.headsign}
-          </td></tr>
+            </td>
+          </tr>
         </table>
       </td>
+      {/* trips */}
       <td className="hidden lg:table-cell">{tripInfo.trips}</td>
+      {/* block name */}
+      <td className="hidden md:table-cell font-mono">{vehicle.blockName?.slice(-3)}</td>
     </> :  <>
       <td className="table-cell md:hidden text-center">-</td>
       <td className="hidden md:table-cell text-center" colSpan={2}>-</td>
       <td className="hidden lg:table-cell text-center">-</td>
+      <td className="hidden md:table-cell text-center">-</td>
     </>}
+    {}
+    {/* vehicle adherence */}
     <td className={"px-2 font-mono " + (!onSchedule ? vehicle.adherence > 0 ? "text-green-500" : "text-red-500" : '')}>
       <span className="hidden md:block">{schedule}</span>
       <span className="block md:hidden text-center">{minifySchedule}</span>
     </td>
-      <td className="hidden lg:table-cell px-2">{HSTify(vehicle.last_message)}</td>
-      <td className="table-cell lg:hidden px-2 text-center font-mono">{HSTify(vehicle.last_message, true)}</td>
+
+    {/* last updated text */}
+    <td className="hidden lg:table-cell px-2 text-right font-mono">{HSTify(vehicle.last_message)}</td>
+    <td className="table-cell lg:hidden px-2 text-center font-mono">{HSTify(vehicle.last_message, true)}</td>
   </tr>;
 }

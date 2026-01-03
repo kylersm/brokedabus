@@ -13,6 +13,21 @@ import Collapser from "./Collapser";
 const ignoreRoutes = ['A', '20', '303'];
 const SelectClass = "block md:flex gap-x-6 space-y-2 sm:space-y-0 whitespace-nowrap text-left flex-wrap pb-3";
 export const ContainerClass = "bg-gray-50 dark:bg-[#333] shadow-inner shadow-neutral-400 dark:shadow-black text-left p-3 px-4 rounded-md mt-3 mb-7 gap-y-2";
+export const regionRoute: Record<string, string> = {
+  "A LINE": "Downtown Lines & CountryExpress",
+  "1": "Downtown Honolulu",
+  "23": "Kahala - Hawaii Kai",
+  "301": "Salt Lake - Pearl Harbor Hickam",
+  "40": "Makaha - Waianae",
+  "41": "Kapolei",
+  "42": "Ewa Beach",
+  "43": "West Loch - Waipahu - Waikele",
+  "501": "Mililani",
+  "51": "Wahiawa - Haleiwa",
+  "53": "Pearl City - Aiea - Halawa",
+  "60": "Kaneohe - North Shore",
+  "66": "Kailua",
+}
 
 /**
  * Shows vehicle filtering options for the /vehicles/map and /vehicles page.
@@ -127,15 +142,41 @@ export default function VehicleFilterOptions(props: {
               setFilters({ routeIdFilters: [] })}
             >Unselect All</span>
           </div>
-          <div className={`${ContainerClass} w-fit ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>{!allRoutes ? <Spinner center/> : allRoutes.filter(r => !ignoreRoutes.includes(r.code)).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => 
-            <label key={"Route-"+r._id} className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}>
-              <input type="checkbox" className="mb-auto mt-1.5" checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)} onChange={(e) => 
-                !filters.routeIdFilters ? setFilters({ routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)}) : 
-                  setFilters({ routeIdFilters: !e.target.checked ? filters.routeIdFilters.filter(f => f !== r._id) :
-                    filters.routeIdFilters.concat(r._id)})
-              }/> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
-            </label>
-          )}</div>
+          <div className={`${ContainerClass} w-full max-w-full ${allRoutes ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : ''}`}>
+            {!allRoutes
+              ? <Spinner center/>
+              : allRoutes.filter(r => !ignoreRoutes.includes(r.code)).sort((a, b) => sortRouteCodes(a.code, b.code)).map(r => {
+                const header = regionRoute[r.code];
+                return <>
+                  {header && <div className="text-lg text-center font-bold col-span-1 sm:col-span-2 lg:col-span-3 2xl:col-span-4">
+                    {header}
+                  </div>}
+                  <label
+                    key={"Route-"+r._id}
+                    className={`flex gap-2 pr-3 h-fit w-full ${(!activeRoutes.some(a => a._id === r._id) ? "italic" : "")}`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="mb-auto mt-1.5"
+                      checked={!filters.routeIdFilters || filters.routeIdFilters?.includes(r._id)}
+                      onChange={(e) => 
+                      !filters.routeIdFilters
+                        ? setFilters({
+                          routeIdFilters: allRoutes?.map(a => a._id).filter(a => a !== r._id)
+                        })
+                        : setFilters({
+                          routeIdFilters: !e.target.checked
+                            ? filters.routeIdFilters.filter(f => f !== r._id)
+                            : filters.routeIdFilters.concat(r._id)
+                          })
+                      }
+                    /> <RouteChip route={{ code: r.code, id: r._id }}/> {r.name}
+                  </label>
+                </>;
+                }
+              )
+            }
+          </div>
         </Collapser>
 
         <div className="mx-auto w-fit space-y-3">
