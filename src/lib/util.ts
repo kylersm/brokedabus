@@ -24,11 +24,19 @@ const dateOptions: Intl.DateTimeFormatOptions = {
 export const HST_UTC_OFFSET = 10 * 60 * 60;
 
 export const HSTify = (date: Date, excludeDate?: boolean, excludeTime?: boolean) => {
+  let showDateOnly = false;
+  // i supply some date objects with no actual date; just the time, messes up the arrival.
+  if (excludeDate && date.getTime() > 7 * 24 * 60 * 60 * 1000) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (date.getTime() < now.getTime())
+      showDateOnly = true;
+  }
   return date.toLocaleString("en-US", { 
     timeZone: "HST",
-    ...timeOptions,
-    ...(excludeDate ? {} : dateOptions),
-    ...(excludeTime ? {} : timeOptions)
+    ...(showDateOnly ? {} : timeOptions),
+    ...(excludeDate && !showDateOnly ? {} : dateOptions),
+    ...(excludeTime || showDateOnly ? {} : timeOptions)
   });
 }
 
@@ -42,18 +50,76 @@ export const sortString = (a: string, b: string) => {
   return numericSorter.compare(a, b);
 }
 
+// override how routes are ordered.
+// the order is meant to group them by 'areas'.
+const routeAliases: Record<string, string> = {
+  "": "W LINE",  // blank for skyline
+  "46": "419",
+  "47": "42.0",  // put above the kapilina route
+
+  "80":   "234", // Hawaii Kai
+  "81":   "444", // Waipahu
+  "82":   "234", // Kalama Valley
+  "83":   "529", // Wahiawa-Haleiwa
+  "84":   "509", // Mililani
+  "84A":  "509", // Mililani
+  "85":   "651", // Kaneohe
+  "86":   "651", // Haiku
+  "87":   "69", // Kailua
+  "88":   "651", // Ahuimanu
+  "88A":  "651", // North Shore
+  "89":   "69", // Waimanalo
+  "90":   "552", // Pearl City
+  "91":   "429", // Ewa Beach
+  "91A":  "429", // Ewa Gentry
+  "92":   "419", // Makakilo
+  "93":   "409", // Waianae-Makaha
+  "94":   "419", // Kapolei
+  "95":   "419", // Kapolei
+  "96":   "444", // Waipio Gentry
+  "96A":  "444", // Waikele
+  "97":   "444", // Village Park
+  "98":   "509", // Mililani-Wahiawa
+  "98A":  "509", // Mililani
+  "99":   "419", // Wahiawa-Mililani-Waipahu-Kapolei
+
+  "PH1":  "40Z",
+  "PH2":  "50Z",
+  "PH3":  "52Z",
+  "PH4":  "65Z",
+  "PH6":  "23Z",
+  "PH7":  "42Z",
+  "PH8":  "33Z",
+
+  "W1":   "42Z",
+  "W2":   "44Z",
+  "W3":   "200",
+};
+
 // whether it is a city/countryexpress route (reserved for one-letters?)
 const isCE = (str: string) => str.length === 1 && isNaN(parseInt(str));
 const isLine = (str: string) => str.endsWith(" LINE");
 export const sortRouteCodes = (a: string, b: string) => {
   // decided to sort the express/lines alphabetically, since A/20 are getting dropped...
+  const _a = routeAliases[parseInt(a.slice(0,2)) ? a.slice(0,2) : a];
+  const _b = routeAliases[parseInt(b.slice(0,2)) ? b.slice(0,2) : b];
+  a = _a ? (_a + a) : a;
+  b = _b ? (_b + b) : b;
   const A = isCE(a) || isLine(a);
   const B = isCE(b) || isLine(b);
   if(A && B) return numericSorter.compare(a, b);
   else if(A) return -1;
   else if(B) return 1;
 
-  return sortString(a, b);
+  const C = parseInt(a) <= 20;
+  const D = parseInt(b) <= 20;
+  if(C && D) return numericSorter.compare(a, b);
+  else if (C) return -1;
+  else if (D) return 1;
+  if(numericSorter.compare(a.slice(0,2), b.slice(0,2)) === 0)
+    return numericSorter.compare(a.slice(2) ?? '', b.slice(2) ?? '');
+
+  return numericSorter.compare(a.slice(0,2), b.slice(0,2));
 };
 
 // 30xxx used for "garages" aka end of shifts?
