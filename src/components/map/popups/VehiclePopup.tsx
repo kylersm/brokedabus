@@ -85,12 +85,12 @@ export default function VehiclePopup(props: {
     })}
     {schedule}
     {blocks && <>{
-        blocks.next && (vehicleNow > blocks.end || (vehicle.adherence >= 0 && vehicleNow > blocks.end)) && vehicleNow < blocks.next.firstArrives ? <>,
-          On layover until {HSTify(new Date((blocks.next.firstArrives + HST_UTC_OFFSET) * 1000), true)}<br/>
+        blocks.next && vehicleNow > blocks.end && vehicleNow > blocks.next.firstArrives ? <>, 
+          Driver may skip layover<br/>
           {nextTrip}
         </> :
-        blocks.next && vehicleNow > blocks.end && vehicleNow >= blocks.next.firstArrives && vehicleNow <= blocks.next.firstArrives ? <>, 
-          Driver may skip layover<br/>
+        blocks.next && (vehicleNow > blocks.end || (vehicle.adherence >= 0 && vehicleNow > blocks.end)) && vehicleNow < blocks.next.firstArrives ? <>,
+          On layover until {HSTify(new Date((blocks.next.firstArrives + HST_UTC_OFFSET) * 1000), true)}<br/>
           {nextTrip}
         </> :
         blocks.next && vehicleNow >= blocks.next.firstArrives ? <>, 
